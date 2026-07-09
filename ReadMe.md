@@ -258,13 +258,13 @@ This design demonstrates:
 
 ## For portfolio, interview, or architecture discussions, this is stronger than a simple CRUD payment app because it reflects real-world financial integration and asynchronous orchestration concerns.
 
-### Prompt: Generate PayPulse Backend Application:
+### Prompt: Generate PayPulse Backend Application
 
-Act as a Principal Software Architect, Senior Java Engineer, and Enterprise Integration Specialist.
+Act as a **Principal Software Architect**, **Senior Java Engineer**, and **Enterprise Integration Specialist**.
 
-Generate a complete production-grade backend application called "PayPulse".
+Generate a complete production-grade backend application called **PayPulse**.
 
-Technology Stack:
+#### Technology Stack
 
 - Java 25
 - Spring Boot 4
@@ -285,22 +285,18 @@ Technology Stack:
 - SOLID Principles
 - Domain Driven Design (DDD)
 
-==========================================
-BUSINESS CONTEXT
-==========================================
+#### Business Context
 
-PayPulse is a Batch Payment Orchestration Platform.
+PayPulse is a batch payment orchestration platform.
 
-Users submit payment batches through a REST API.
-
-A payment batch contains multiple payment transactions.
+Users submit payment batches through a REST API. A payment batch contains multiple payment transactions.
 
 After a batch is submitted:
 
 1. The request is validated.
 2. Batch details are persisted in PostgreSQL.
 3. Individual payment transactions are persisted.
-4. API immediately returns HTTP 202 Accepted.
+4. API immediately returns HTTP `202 Accepted`.
 5. A background worker is triggered asynchronously.
 6. The worker invokes an external SOAP service.
 7. The SOAP service processes all transactions belonging to the batch.
@@ -309,117 +305,105 @@ After a batch is submitted:
 10. Clients can poll the status endpoint.
 11. Clients can retrieve historical batches for specified date ranges.
 
-The system is an orchestration layer and does NOT perform payment processing itself.
+The system is an orchestration layer and does **not** perform payment processing itself.
 
-==========================================
-FUNCTIONAL REQUIREMENTS
-==========================================
+#### Functional Requirements
 
-API #1
-Submit Batch Payment Request
+##### API #1 - Submit Batch Payment Request
 
-POST /api/v1/payment-batch
+- **Endpoint:** `POST /api/v1/payment-batch`
 
-Request:
+**Request**
 
+```json
 {
-"batchReference": "PAYROLL-JULY-2026",
-"requestedBy": "finance-team",
-"transactions": [
-{
-"employeeId": "EMP001",
-"amount": 2500.00,
-"currency": "EUR"
-},
-{
-"employeeId": "EMP002",
-"amount": 3500.00,
-"currency": "EUR"
+  "batchReference": "PAYROLL-JULY-2026",
+  "requestedBy": "finance-team",
+  "transactions": [
+    {
+      "employeeId": "EMP001",
+      "amount": 2500.00,
+      "currency": "EUR"
+    },
+    {
+      "employeeId": "EMP002",
+      "amount": 3500.00,
+      "currency": "EUR"
+    }
+  ]
 }
-]
-}
+```
 
-Expected Behaviour:
+**Expected Behavior**
 
 - Validate request.
 - Create payment batch record.
 - Create transaction records.
 - Store everything in PostgreSQL.
-- Set batch status to PENDING.
+- Set batch status to `PENDING`.
 - Trigger asynchronous processing.
-- Return HTTP 202 Accepted.
+- Return HTTP `202 Accepted`.
 
-Response:
+**Response**
 
+```json
 {
-"batchId": "BP-20260709-000001",
-"status": "PENDING",
-"statusUrl": "/api/v1/payment-batches/BP-20260709-000001/status"
+  "batchId": "BP-20260709-000001",
+  "status": "PENDING",
+  "statusUrl": "/api/v1/payment-batches/BP-20260709-000001/status"
 }
+```
 
-==========================================
+##### API #2 - Retrieve Batch Status
 
-API #2
-Retrieve Batch Status
+- **Endpoint:** `GET /api/v1/payment-batches/{batchId}/status`
 
-GET /api/v1/payment-batches/{batchId}/status
+**Response**
 
-Response:
-
+```json
 {
-"batchId": "BP-20260709-000001",
-"batchStatus": "IN_PROGRESS",
-"totalTransactions": 100,
-"successfulTransactions": 50,
-"failedTransactions": 5,
-"pendingTransactions": 45,
-"progressPercentage": 55,
-"lastUpdated": "2026-07-09T12:30:00Z"
+  "batchId": "BP-20260709-000001",
+  "batchStatus": "IN_PROGRESS",
+  "totalTransactions": 100,
+  "successfulTransactions": 50,
+  "failedTransactions": 5,
+  "pendingTransactions": 45,
+  "progressPercentage": 55,
+  "lastUpdated": "2026-07-09T12:30:00Z"
 }
+```
 
 Status must be calculated from transaction statuses.
 
-==========================================
+##### API #3 - Retrieve Historical Payment Batches
 
-API #3
-Retrieve Historical Payment Batches
-
-GET /api/v1/payment-batches
+- **Endpoint:** `GET /api/v1/payment-batches`
 
 Support the following filters:
 
-1. Last 3 Months
-
-GET /api/v1/payment-batches?period=LAST_3_MONTHS
-
-2. Last 6 Months
-
-GET /api/v1/payment-batches?period=LAST_6_MONTHS
-
-3. Custom Date Range
-
-GET /api/v1/payment-batches?fromDate=2026-01-01&toDate=2026-06-30
+1. Last 3 months:
+   - `GET /api/v1/payment-batches?period=LAST_3_MONTHS`
+2. Last 6 months:
+   - `GET /api/v1/payment-batches?period=LAST_6_MONTHS`
+3. Custom date range:
+   - `GET /api/v1/payment-batches?fromDate=2026-01-01&toDate=2026-06-30`
 
 Response should include:
 
-- batchId
-- batchReference
-- submittedBy
-- submittedAt
-- status
-- totalTransactions
-- progressPercentage
+- `batchId`
+- `batchReference`
+- `submittedBy`
+- `submittedAt`
+- `status`
+- `totalTransactions`
+- `progressPercentage`
 
 Historical data source:
 
-Primary Source:
-PostgreSQL
+- **Primary source:** PostgreSQL
+- If historical data is not available locally, the application should demonstrate how a SOAP historical service could be queried and synchronized.
 
-If historical data is not available locally, the application should demonstrate how a SOAP historical service could be queried and synchronized.
-
-==========================================
-ASYNC PROCESSING REQUIREMENTS
-==========================================
+#### Async Processing Requirements
 
 After a batch is submitted:
 
@@ -431,120 +415,95 @@ After a batch is submitted:
 6. Update overall batch metrics.
 7. Persist all updates.
 
-The REST thread must never wait for processing.
+The REST thread must never wait for processing and must return immediately with HTTP `202`.
 
-Must return immediately with HTTP 202.
-
-==========================================
-SOAP INTEGRATION REQUIREMENTS
-==========================================
+#### SOAP Integration Requirements
 
 Create infrastructure for SOAP integration.
 
-Payment SOAP Client:
+**Payment SOAP Client**
 
-submitBatch(batchId)
+- `submitBatch(batchId)`
 
-Mock SOAP Response Example:
+**Mock SOAP Response Example**
 
+```json
 {
-"transactionId": "TXN001",
-"status": "SUCCESS"
+  "transactionId": "TXN001",
+  "status": "SUCCESS"
 }
+```
 
-Historical SOAP Client:
+**Historical SOAP Client**
 
-retrieveHistoricalBatches(fromDate, toDate)
+- `retrieveHistoricalBatches(fromDate, toDate)`
 
-Implement SOAP adapters using Spring Web Services.
+Implement SOAP adapters using Spring Web Services and provide mock implementations for local development.
 
-Provide mock implementations for local development.
+#### Database Requirements
 
-==========================================
-DATABASE REQUIREMENTS
-==========================================
+**Table: `payment_batch`**
 
-Table: payment_batch
+- `id` (UUID)
+- `batch_id` (business identifier)
+- `batch_reference`
+- `requested_by`
+- `status`
+- `total_transactions`
+- `successful_transactions`
+- `failed_transactions`
+- `pending_transactions`
+- `progress_percentage`
+- `created_at`
+- `updated_at`
 
-Fields:
+**Table: `payment_transaction`**
 
-- id (UUID)
-- batch_id (business identifier)
-- batch_reference
-- requested_by
-- status
-- total_transactions
-- successful_transactions
-- failed_transactions
-- pending_transactions
-- progress_percentage
-- created_at
-- updated_at
+- `id` (UUID)
+- `transaction_id`
+- `batch_id`
+- `employee_id`
+- `amount`
+- `currency`
+- `status`
+- `external_reference`
+- `failure_reason`
+- `created_at`
+- `updated_at`
 
-------------------------------------------
+#### Status Rules
 
-Table: payment_transaction
+**Batch status values**
 
-Fields:
+- `PENDING`
+- `IN_PROGRESS`
+- `COMPLETED`
+- `FAILED`
+- `PARTIALLY_COMPLETED`
 
-- id (UUID)
-- transaction_id
-- batch_id
-- employee_id
-- amount
-- currency
-- status
-- external_reference
-- failure_reason
-- created_at
-- updated_at
+**Calculation rules**
 
-==========================================
-STATUS RULES
-==========================================
+- `PENDING` -> all transactions pending
+- `IN_PROGRESS` -> at least one transaction processing
+- `COMPLETED` -> all transactions successful
+- `FAILED` -> all transactions failed
+- `PARTIALLY_COMPLETED` -> combination of success and failure
 
-Batch Status Values:
+**Transaction status values**
 
-PENDING
-IN_PROGRESS
-COMPLETED
-FAILED
-PARTIALLY_COMPLETED
+- `PENDING`
+- `PROCESSING`
+- `SUCCESS`
+- `FAILED`
 
-Calculation Rules:
-
-PENDING
-→ All transactions pending
-
-IN_PROGRESS
-→ At least one transaction processing
-
-COMPLETED
-→ All transactions successful
-
-FAILED
-→ All transactions failed
-
-PARTIALLY_COMPLETED
-→ Combination of success and failure
-
-Transaction Status Values:
-
-PENDING
-PROCESSING
-SUCCESS
-FAILED
-
-==========================================
-ARCHITECTURE REQUIREMENTS
-==========================================
+#### Architecture Requirements
 
 Use clean layered architecture.
 
-Package Structure:
+**Package structure**
 
+```text
 com.paypulse
-
 ├── api
 ├── application
 ├── domain
@@ -557,10 +516,9 @@ com.paypulse
 ├── configuration
 ├── exception
 └── util
+```
 
-==========================================
-NON-FUNCTIONAL REQUIREMENTS
-==========================================
+#### Non-Functional Requirements
 
 - Global exception handling
 - RFC7807 Problem Details responses
@@ -570,7 +528,7 @@ NON-FUNCTIONAL REQUIREMENTS
 - Structured JSON logging
 - Flyway migration scripts
 - Dockerfile
-- docker-compose.yml
+- `docker-compose.yml`
 - Health endpoint
 - Actuator
 - Configuration properties pattern
@@ -578,29 +536,25 @@ NON-FUNCTIONAL REQUIREMENTS
 - Pagination support
 - Sorting support
 
-==========================================
-TESTING REQUIREMENTS
-==========================================
+#### Testing Requirements
 
 Generate:
 
-- Unit Tests
-- Repository Tests
-- Service Tests
-- Controller Tests
-- Integration Tests
+- Unit tests
+- Repository tests
+- Service tests
+- Controller tests
+- Integration tests
 - Testcontainers for PostgreSQL
 
 Minimum 80% code coverage.
 
-==========================================
-DELIVERABLES
-==========================================
+#### Deliverables
 
 Generate:
 
 1. Complete Maven project structure.
-2. pom.xml.
+2. `pom.xml`.
 3. Domain model.
 4. REST controllers.
 5. Services.
@@ -613,10 +567,9 @@ Generate:
 12. Configuration classes.
 13. Tests.
 14. Docker support.
-15. README.md.
-16. Sequence Diagram (Mermaid).
-17. Component Diagram (Mermaid).
+15. `README.md`.
+16. Sequence diagram (Mermaid).
+17. Component diagram (Mermaid).
 18. API documentation examples.
 
-Generate production-quality code, not pseudocode.
-Follow enterprise Spring Boot best practices throughout.
+Generate production-quality code, not pseudocode. Follow enterprise Spring Boot best practices throughout.
