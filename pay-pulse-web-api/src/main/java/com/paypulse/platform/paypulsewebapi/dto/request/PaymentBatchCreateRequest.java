@@ -1,8 +1,10 @@
 package com.paypulse.platform.paypulsewebapi.dto.request;
 
 import com.paypulse.platform.paypulsewebapi.dto.common.PaymentMethod;
+import com.paypulse.platform.paypulsewebapi.dto.validator.ValidBatchTotal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,9 +17,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * DTO for creating a new payment batch request.
+ * Request DTO for creating a new payment batch request.
  *
  */
+@ValidBatchTotal
 public record PaymentBatchCreateRequest(
         @NotBlank(message = "Merchant ID is required")
         String merchantId,
@@ -42,23 +45,50 @@ public record PaymentBatchCreateRequest(
         @NotNull(message = "Payment method is required")
         PaymentMethod paymentMethod,
 
+        @NotNull(message = "Execution date is required")
         @FutureOrPresent(message = "Execution date must be today or in the future")
         LocalDate executionDate,
+
+        @NotBlank(message = "Batch description is required")
+        @Size(min = 1, max = 500, message = "Batch description must be between 1 and 500 characters")
+        String batchDescription,
+
+        @NotBlank(message = "Requested by is required")
+        @Email(message = "Requested by must be a valid email address")
+        String requestedBy,
 
         @NotEmpty(message = "At least one payment is required")
         @Size(min = 1, max = 1000, message = "A batch may contain at most 1000 payments")
         List<@Valid PaymentItemRequest> payments
 ) {
     public record PaymentItemRequest(
+
+            @NotBlank(message = "Payment ID is required")
+            String paymentId,
+
             @NotBlank(message = "Beneficiary ID is required")
             String beneficiaryId,
+
+            @NotBlank(message = "Beneficiary name is required")
+            @Size(min = 1, max = 255, message = "Beneficiary name must be between 1 and 255 characters")
+            String beneficiaryName,
+
+            @NotBlank(message = "Beneficiary IBAN is required")
+            @Pattern(regexp = "^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$", message = "Invalid IBAN format (must be 15-34 characters)")
+            String beneficiaryIBAN,
 
             @NotNull(message = "Amount is required")
             @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
             BigDecimal amount,
 
-            @Size(max = 255)
-            String paymentReference) {
+            @NotBlank(message = "Payment reference is required")
+            @Size(min = 1, max = 255, message = "Payment reference must be between 1 and 255 characters")
+            String paymentReference,
+
+            @NotBlank(message = "Description is required")
+            @Size(min = 1, max = 500, message = "Description must be between 1 and 500 characters")
+            String description
+    ) {
     }
 }
 
