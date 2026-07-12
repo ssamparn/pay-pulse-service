@@ -11,11 +11,61 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>25</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <internal-module.version>1.0.0</internal-module.version>
     </properties>
 
     <modules>
-        <module>pay-pulse-web-api</module>
+        <module>pay-pulse-service-web</module>
         <module>pay-pulse-service-stubs</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>4.1.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.46</version>
+            </dependency>
+
+            <!-- ===== Internal ===== -->
+            <dependency>
+                <groupId>com.paypulse.platform</groupId>
+                <artifactId>pay-pulse-service-model</artifactId>
+                <version>${internal-module.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.paypulse.platform</groupId>
+                <artifactId>pay-pulse-service-persistence</artifactId>
+                <version>${internal-module.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.14.0</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

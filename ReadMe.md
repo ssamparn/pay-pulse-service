@@ -4,7 +4,7 @@
 
 PayPulse is a **Batch Payment Orchestration Platform**.
 
-It does not process payments directly. Instead, it orchestrates the full batch lifecycle:
+It does not process payments directly. Instead, it orchestrates the full batch payment lifecycle:
 
 1. Users submit a batch payment request.
 2. PayPulse validates and stores the request.
@@ -51,13 +51,60 @@ PostgreSQL            Background Worker
   - Trigger async worker
   - Return `202 Accepted`
 
+**Request**
+
+```json
+{
+  "merchantId": "MERCHANT-12345",
+  "customerId": "CUSTOMER-67890",
+  "batchId": "BATCH-20260710-001",
+  "idempotencyKey": "8d83c7b4-98f3-440b-a0b0-fd741ef5d623",
+  "totalAmount": 3500.00,
+  "currency": "EUR",
+  "paymentMethod": "SEPA",
+  "executionDate": "2026-07-15",
+  "batchDescription": "July invoices batch",
+  "requestedBy": "user@merchant.com",
+  "payments": [
+    {
+      "paymentId": "PAY-001",
+      "beneficiaryId": "BENEFICIARY-001",
+      "beneficiaryName": "Vendor A",
+      "beneficiaryIBAN": "DE89370400440532013000",
+      "amount": 1500.00,
+      "paymentReference": "Invoice INV-1001",
+      "description": "Payment for services"
+    },
+    {
+      "paymentId": "PAY-002",
+      "beneficiaryId": "BENEFICIARY-002",
+      "beneficiaryName": "Vendor B",
+      "beneficiaryIBAN": "DE89370400440532013000",
+      "amount": 1000.00,
+      "paymentReference": "Invoice INV-1002",
+      "description": "Payment for services"
+    },
+    {
+      "paymentId": "PAY-002",
+      "beneficiaryId": "BENEFICIARY-003",
+      "beneficiaryName": "Vendor C",
+      "beneficiaryIBAN": "DE89370400440532013000",
+      "amount": 1000.00,
+      "paymentReference": "Invoice INV-1003",
+      "description": "Payment for services"
+    }
+  ]
+}
+```
 **Sample Response**
 
 ```json
 {
   "batchId": "BP-20260709-00001",
   "status": "PENDING",
-  "statusUrl": "/api/v1/payment-batches/BP-20260709-00001/status"
+  "createdAt": "2026-07-10T09:15:34",
+  "statusUrl": "/api/v1/payment-batches/BP-20260709-00001/status",
+  "isDuplicate": false
 }
 ```
 
@@ -76,7 +123,8 @@ PostgreSQL            Background Worker
   "successfulTransactions": 320,
   "failedTransactions": 12,
   "pendingTransactions": 168,
-  "progressPercentage": 66
+  "progressPercentage": 66,
+  "createdAt": "2026-07-10T09:15:34"
 }
 ```
 
@@ -175,9 +223,9 @@ SOAP Historical Service
 ## Sequence Diagram
 
 ```text
-+--------+          +-----------+          +------------+          +-------------+          +-------------+
-|   FE   |          | PayPulse  |          | PostgreSQL |          | SOAP Worker |          | SOAP System |
-+--------+          +-----------+          +------------+          +-------------+          +-------------+
++--------+           +-----------+         +------------+          +-------------+          +-------------+
+|   FE   |           | PayPulse  |         | PostgreSQL |          | SOAP Worker |          | SOAP System |
++--------+           +-----------+         +------------+          +-------------+          +-------------+
 |                    |                     |                        |                        |
 | POST Batch         |                     |                        |                        |
 |------------------->|                     |                        |                        |
