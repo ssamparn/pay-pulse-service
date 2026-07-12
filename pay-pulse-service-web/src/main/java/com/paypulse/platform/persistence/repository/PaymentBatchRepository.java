@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PaymentBatchRepository extends JpaRepository<PaymentBatch, Long> {
+public interface PaymentBatchRepository extends JpaRepository<PaymentBatch, String> {
 
 }

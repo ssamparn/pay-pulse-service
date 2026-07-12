@@ -2,6 +2,7 @@ package com.paypulse.platform.controller;
 
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
 import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
+import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
 import com.paypulse.platform.service.PaymentBatchService;
 
 import java.net.URI;
@@ -10,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,15 +48,16 @@ public class PaymentBatchRestController {
 				.body(response);
 	}
 
+	@GetMapping("/payment-batches/{batchId}/status")
+	public PaymentBatchStatusResponse getBatchStatus(@PathVariable String batchId) {
+		return paymentBatchService.getBatchStatus(batchId);
+	}
+
 //	@GetMapping("/payment-batches")
 //	public List<PaymentBatchSummaryResponse> listPaymentBatches(
 //			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
 //			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
 //		return paymentBatchService.listBatches(fromDate, toDate);
 //	}
-//
-//	@GetMapping("/payment-batches/{batchId}/status")
-//	public PaymentBatchStatusResponse getBatchStatus(@PathVariable String batchId) {
-//		return paymentBatchService.getBatchStatus(batchId);
-//	}
+
 }

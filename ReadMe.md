@@ -119,12 +119,26 @@ PostgreSQL            Background Worker
 {
   "batchId": "BP-20260709-00001",
   "status": "IN_PROGRESS",
-  "totalTransactions": 500,
-  "successfulTransactions": 320,
-  "failedTransactions": 12,
-  "pendingTransactions": 168,
-  "progressPercentage": 66,
-  "createdAt": "2026-07-10T09:15:34"
+  "summary": {
+    "totalTransactions": 500,
+    "successfulTransactions": 320,
+    "failedTransactions": 12,
+    "pendingTransactions": 168
+  },
+  "timing": {
+    "createdAt": "2026-07-10T09:15:34",
+    "lastUpdatedAt": "2026-07-10T09:25:00",
+    "estimatedCompletionTime": "2026-07-10T10:30:00"
+  },
+  "failureInfo": {
+    "retryableFailures": 5,
+    "permanentFailures": 7,
+    "lastErrorMessage": "IBAN validation failed"
+  },
+  "links": {
+    "paymentDetails": "/api/v1/payment-batches/BP-20260709-00001/payments",
+    "failedPayments": "/api/v1/payment-batches/BP-20260709-00001/payments?status=FAILED"
+  }
 }
 ```
 

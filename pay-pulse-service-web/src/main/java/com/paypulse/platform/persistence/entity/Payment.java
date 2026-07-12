@@ -33,6 +33,8 @@ public class Payment {
     private String paymentReference;
 
     private String description;
+    private String failureReason;
+    private boolean retryable; // Whether this failure can be retried
     @Enumerated(EnumType.STRING)
 
     private BatchStatus status;
