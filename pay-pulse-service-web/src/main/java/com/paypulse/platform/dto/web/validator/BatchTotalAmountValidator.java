@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 @Slf4j
-public class BatchTotalValidator implements ConstraintValidator<ValidBatchTotal, PaymentBatchCreateRequest> {
+public class BatchTotalAmountValidator implements ConstraintValidator<ValidBatchTotal, PaymentBatchCreateRequest> {
 
     @Override
     public boolean isValid(PaymentBatchCreateRequest request, ConstraintValidatorContext context) {

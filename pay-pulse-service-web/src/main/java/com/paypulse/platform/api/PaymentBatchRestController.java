@@ -1,12 +1,16 @@
-package com.paypulse.platform.controller;
+package com.paypulse.platform.api;
 
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
 import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
+import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
 import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
-import com.paypulse.platform.service.PaymentBatchService;
 
 import java.net.URI;
+import java.time.LocalDate;
 
+import com.paypulse.platform.service.BatchPaymentInitiationService;
+import com.paypulse.platform.service.BatchPaymentStatusService;
+import com.paypulse.platform.service.HistoricalBatchPaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -24,7 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PaymentBatchRestController {
 
-	private final PaymentBatchService paymentBatchService;
+	private final BatchPaymentInitiationService batchPaymentInitiationService;
+	private final BatchPaymentStatusService batchPaymentStatusService;
+	private final HistoricalBatchPaymentService historicalBatchPaymentService;
 
 	/**
 	 * Creates a new payment batch with the provided details.
@@ -37,7 +44,7 @@ public class PaymentBatchRestController {
 	public ResponseEntity<PaymentBatchCreateResponse> createPaymentBatch(@Valid @RequestBody PaymentBatchCreateRequest request) {
 		log.info("POST /api/v1/payment-batch - Creating batch payment request with batchId: {}", request.batchId());
 
-		PaymentBatchCreateResponse response = paymentBatchService.createBatch(request);
+		PaymentBatchCreateResponse response = batchPaymentInitiationService.createBatch(request);
 
 		log.info("Payment batch created successfully. BatchId: {}, Status: {}, IsDuplicate: {}",
 				response.batchId(), response.status(), response.isDuplicate());
@@ -50,14 +57,23 @@ public class PaymentBatchRestController {
 
 	@GetMapping("/payment-batches/{batchId}/status")
 	public PaymentBatchStatusResponse getBatchStatus(@PathVariable String batchId) {
-		return paymentBatchService.getBatchStatus(batchId);
+		return batchPaymentStatusService.getBatchStatus(batchId);
 	}
 
-//	@GetMapping("/payment-batches")
-//	public List<PaymentBatchSummaryResponse> listPaymentBatches(
-//			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-//			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
-//		return paymentBatchService.listBatches(fromDate, toDate);
-//	}
+	@GetMapping("/payment-batches")
+	public ResponseEntity<PaymentBatchListResponse> getHistoricalBatches(
+			@RequestParam(required = false) String period,
+			@RequestParam(required = false) LocalDate fromDate,
+			@RequestParam(required = false) LocalDate toDate,
+			@RequestParam(defaultValue = "1") Integer page,
+			@RequestParam(defaultValue = "20") Integer pageSize) {
+
+		log.info("GET /api/v1/payment-batches - Fetching historical batches. Period: {}, FromDate: {}, ToDate: {}, Page: {}, PageSize: {}",
+				period, fromDate, toDate, page, pageSize);
+
+		PaymentBatchListResponse response = historicalBatchPaymentService.getHistoricalBatches(period, fromDate, toDate, page, pageSize);
+
+		return ResponseEntity.ok(response);
+	}
 
 }

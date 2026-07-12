@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(builderMethodName = "create")
-public class PaymentBatch {
+public class PaymentBatchEntity {
 
     @Id
     private String batchId;

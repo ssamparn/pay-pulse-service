@@ -1,12 +1,12 @@
-package com.paypulse.platform.service;
+package com.paypulse.platform.persistence.service;
 
-import com.paypulse.platform.persistence.entity.PaymentBatch;
+import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class IdempotencyService {
 
-    public PaymentBatch getExistingBatch(String idempotencyKey) {
+    public PaymentBatchEntity getExistingBatch(String idempotencyKey) {
         // Query by idempotency key
         return null;
     }

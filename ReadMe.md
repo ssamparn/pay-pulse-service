@@ -4,16 +4,16 @@
 
 PayPulse is a **Batch Payment Orchestration Platform**.
 
-It does not process payments directly. Instead, it orchestrates the full batch payment lifecycle:
+It does not process paymentEntities directly. Instead, it orchestrates the full batch paymentEntity lifecycle:
 
-1. Users submit a batch payment request.
-2. PayPulse validates and stores the request.
-3. PayPulse immediately returns `202 Accepted`.
+1. Users submit a batch paymentEntity request.
+2. PayPulse validates the request & immediately returns `202 Accepted`.
+3. PayPulse stores the request in postgresql database.
 4. A background worker asynchronously calls an external SOAP service.
 5. The SOAP service processes transactions in the batch.
 6. PayPulse tracks transaction outcomes and derives batch status.
 7. Batch and transaction data are persisted in PostgreSQL.
-8. Users can query live status and historical batches.
+8. Users can query live status and historical batch paymentEntities.
 
 ---
 
@@ -40,8 +40,8 @@ PostgreSQL            Background Worker
 
 ### 1) Submit Batch Payment
 
-- **Purpose:** Initiate a new payment batch
-- **Endpoint:** `POST /api/v1/payment-batch`
+- **Purpose:** Initiate a new paymentEntity batch
+- **Endpoint:** `POST /api/v1/paymentEntity-batch`
 - **Behavior:**
   - Validate payload
   - Create batch
@@ -65,7 +65,7 @@ PostgreSQL            Background Worker
   "executionDate": "2026-07-15",
   "batchDescription": "July invoices batch",
   "requestedBy": "user@merchant.com",
-  "payments": [
+  "paymentEntities": [
     {
       "paymentId": "PAY-001",
       "beneficiaryId": "BENEFICIARY-001",
@@ -103,15 +103,17 @@ PostgreSQL            Background Worker
   "batchId": "BP-20260709-00001",
   "status": "PENDING",
   "createdAt": "2026-07-10T09:15:34",
-  "statusUrl": "/api/v1/payment-batches/BP-20260709-00001/status",
+  "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/status",
   "isDuplicate": false
 }
 ```
 
+> Possible values of `status`: `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `PARTIALLY_COMPLETED`
+
 ### 2) Batch Status
 
 - **Purpose:** Retrieve real-time batch status
-- **Endpoint:** `GET /api/v1/payment-batches/{batchId}/status`
+- **Endpoint:** `GET /api/v1/paymentEntity-batches/{batchId}/status`
 
 **Sample Response**
 
@@ -136,8 +138,8 @@ PostgreSQL            Background Worker
     "lastErrorMessage": "IBAN validation failed"
   },
   "links": {
-    "paymentDetails": "/api/v1/payment-batches/BP-20260709-00001/payments",
-    "failedPayments": "/api/v1/payment-batches/BP-20260709-00001/payments?status=FAILED"
+    "paymentDetails": "/api/v1/paymentEntity-batches/BP-20260709-00001/paymentEntities",
+    "failedPayments": "/api/v1/paymentEntity-batches/BP-20260709-00001/paymentEntities?status=FAILED"
   }
 }
 ```
@@ -145,20 +147,94 @@ PostgreSQL            Background Worker
 ### 3) Historical Batch Retrieval
 
 - **Purpose:** Retrieve submitted batches for a time window
-- **Endpoint:** `GET /api/v1/payment-batches`
+- **Endpoint:** `GET /api/v1/paymentEntity-batches`
 
 **Supported Filters**
 
 - Last 3 months:
-  - `GET /api/v1/payment-batches?period=LAST_3_MONTHS`
+  - `GET /api/v1/paymentEntity-batches?period=LAST_3_MONTHS`
 - Last 6 months:
-  - `GET /api/v1/payment-batches?period=LAST_6_MONTHS`
+  - `GET /api/v1/paymentEntity-batches?period=LAST_6_MONTHS`
 - Custom range:
-  - `GET /api/v1/payment-batches?fromDate=2026-01-01&toDate=2026-06-30`
+  - `GET /api/v1/paymentEntity-batches?fromDate=2026-01-01&toDate=2026-06-30`
+
+**Sample Response**
+
+```json
+{
+  "batches": [
+    {
+      "batchId": "BP-20260709-00001",
+      "externalBatchId": "BATCH-20260710-001",
+      "status": "COMPLETED",
+      "totalAmount": 3500.00,
+      "currency": "EUR",
+      "paymentMethod": "SEPA",
+      "paymentCount": 3,
+      "successfulPayments": 3,
+      "failedPayments": 0,
+      "createdAt": "2026-07-10T09:15:34",
+      "completedAt": "2026-07-10T10:30:00",
+      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/status",
+      "detailsUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/paymentEntities"
+    },
+    {
+      "batchId": "BP-20260708-00002",
+      "externalBatchId": "BATCH-20260708-002",
+      "status": "COMPLETED",
+      "totalAmount": 2500.00,
+      "currency": "EUR",
+      "paymentMethod": "SEPA",
+      "paymentCount": 2,
+      "successfulPayments": 2,
+      "failedPayments": 0,
+      "createdAt": "2026-07-08T14:20:00",
+      "completedAt": "2026-07-08T15:45:00",
+      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260708-00002/status",
+      "detailsUrl": "/api/v1/paymentEntity-batches/BP-20260708-00002/paymentEntities"
+    },
+    {
+      "batchId": "BP-20260707-00003",
+      "externalBatchId": "BATCH-20260707-003",
+      "status": "PARTIALLY_COMPLETED",
+      "totalAmount": 1500.00,
+      "currency": "EUR",
+      "paymentMethod": "SEPA",
+      "paymentCount": 5,
+      "successfulPayments": 3,
+      "failedPayments": 2,
+      "createdAt": "2026-07-07T11:10:00",
+      "completedAt": "2026-07-07T12:50:00",
+      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260707-00003/status",
+      "detailsUrl": "/api/v1/paymentEntity-batches/BP-20260707-00003/paymentEntities"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "pageSize": 20,
+    "totalPages": 3,
+    "totalRecords": 47,
+    "hasNextPage": true,
+    "hasPreviousPage": false
+  },
+  "filters": {
+    "period": "LAST_3_MONTHS",
+    "fromDate": "2026-04-10",
+    "toDate": "2026-07-10"
+  },
+  "summary": {
+    "totalBatches": 47,
+    "totalAmount": 125750.00,
+    "completedBatches": 40,
+    "partiallyCompletedBatches": 5,
+    "failedBatches": 2
+  }
+}
+```
 
 ### Important Requirement
 
-If historical data is not available locally, PayPulse can call a SOAP historical API and optionally cache the retrieved records in PostgreSQL.
+If historical data is not available locally, PayPulse can call a SOAP historical API and cache the retrieved records in PostgreSQL.
 
 ```text
 SOAP Historical Service
@@ -176,8 +252,8 @@ SOAP Historical Service
    - `Transactions = PENDING`
 3. PayPulse returns immediately: `202 Accepted`.
 4. Background worker starts (`BatchProcessorWorker`).
-5. Worker invokes SOAP submit operation (`submitBatch(batchId)`).
-6. SOAP service processes transactions (`SUCCESS` / `FAILED`).
+5. Worker invokes SOAP submit operation (`submitBatch(batchId)`) which performs the batch paymentEntity processing.
+6. SOAP service processes transactions inside the batch (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `PARTIALLY_COMPLETED`).
 7. Worker updates `payment_batch` and `payment_transaction` tables.
 8. Batch status is recalculated from transaction outcomes.
 
@@ -272,35 +348,55 @@ SOAP Historical Service
 ## Suggested Internal Architecture
 
 ```text
-com.paypulse
+com.paypulse.platform
 │
 ├── api
-│   └── PaymentBatchController
-│
-├── application
-│   ├── BatchSubmissionService
-│   ├── BatchStatusService
-│   └── HistoricalBatchService
-│
-├── domain
-│   ├── PaymentBatch
-│   ├── PaymentTransaction
-│   ├── BatchStatus
-│   └── TransactionStatus
+│   └── PaymentBatchRestController
+|
+├── config
+|   └── SecurityConfig
+|
+├── dto
+|   ├── common
+|       └── BatchStatus
+|       ├── PaymentMethod  
+|   ├── web
+|       ├── request
+|           └── PaymentBatchCreateRequest  
+|       ├── response
+|           ├── PaymentBatchCreateResponse 
+|           ├── PaymentBatchListResponse           
+|           └── PaymentBatchStatusResponse
+|       └── validator
+|           ├── BatchTotalAmountValidator
+|           └── ValidBatchTotal
 │
 ├── infrastructure
 │   ├── soap
-│   │   ├── PaymentSoapClient
-│   │   └── HistoricalPaymentSoapClient
+│   │   ├── BatchPaymentSoapClient
+│   │   └── HistoricalBatchSoapClient
 │   └── worker
-│       └── BatchProcessingWorker
+│       └── BatchPaymentProcessingWorker
 │
 ├── persistence
-│   ├── PaymentBatchRepository
-│   └── PaymentTransactionRepository
+│   ├── entity
+│       ├── PaymentEntity
+│       └── PaymentBatchEntity 
+│   ├── repository
+│       ├── PaymentBatchRepository
+│       └── PaymentTransactionRepository
+│   └── service
+│       └── IdempotencyService
 │
-├── configuration
-└── exception
+├── service
+│   ├── BatchPaymentInitiationService
+│   ├── BatchPaymentStatusService
+│   └── HistoricalBatchPaymentService
+│
+├── mapper
+│   └── PaymentBatchMapper
+│
+│── PayPulseServiceWebApplication
 ```
 
 ---
@@ -318,7 +414,7 @@ This design demonstrates:
 - Historical search with optional SOAP fallback
 - Enterprise integration patterns for legacy-to-modern systems
 
-## For portfolio, interview, or architecture discussions, this is stronger than a simple CRUD payment app because it reflects real-world financial integration and asynchronous orchestration concerns.
+## For portfolio, interview, or architecture discussions, this is stronger than a simple CRUD paymentEntity app because it reflects real-world financial integration and asynchronous orchestration concerns.
 
 ### Prompt: Generate PayPulse Backend Application
 
@@ -349,15 +445,15 @@ Generate a complete production-grade backend application called **PayPulse**.
 
 #### Business Context
 
-PayPulse is a batch payment orchestration platform.
+PayPulse is a batch paymentEntity orchestration platform.
 
-Users submit payment batches through a REST API. A payment batch contains multiple payment transactions.
+Users submit paymentEntity batches through a REST API. A paymentEntity batch contains multiple paymentEntity transactions.
 
 After a batch is submitted:
 
 1. The request is validated.
 2. Batch details are persisted in PostgreSQL.
-3. Individual payment transactions are persisted.
+3. Individual paymentEntity transactions are persisted.
 4. API immediately returns HTTP `202 Accepted`.
 5. A background worker is triggered asynchronously.
 6. The worker invokes an external SOAP service.
@@ -367,13 +463,13 @@ After a batch is submitted:
 10. Clients can poll the status endpoint.
 11. Clients can retrieve historical batches for specified date ranges.
 
-The system is an orchestration layer and does **not** perform payment processing itself.
+The system is an orchestration layer and does **not** perform paymentEntity processing itself.
 
 #### Functional Requirements
 
 ##### API #1 - Submit Batch Payment Request
 
-- **Endpoint:** `POST /api/v1/payment-batch`
+- **Endpoint:** `POST /api/v1/paymentEntity-batch`
 
 **Request**
 
@@ -399,7 +495,7 @@ The system is an orchestration layer and does **not** perform payment processing
 **Expected Behavior**
 
 - Validate request.
-- Create payment batch record.
+- Create paymentEntity batch record.
 - Create transaction records.
 - Store everything in PostgreSQL.
 - Set batch status to `PENDING`.
@@ -412,13 +508,13 @@ The system is an orchestration layer and does **not** perform payment processing
 {
   "batchId": "BP-20260709-000001",
   "status": "PENDING",
-  "statusUrl": "/api/v1/payment-batches/BP-20260709-000001/status"
+  "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-000001/status"
 }
 ```
 
 ##### API #2 - Retrieve Batch Status
 
-- **Endpoint:** `GET /api/v1/payment-batches/{batchId}/status`
+- **Endpoint:** `GET /api/v1/paymentEntity-batches/{batchId}/status`
 
 **Response**
 
@@ -439,16 +535,16 @@ Status must be calculated from transaction statuses.
 
 ##### API #3 - Retrieve Historical Payment Batches
 
-- **Endpoint:** `GET /api/v1/payment-batches`
+- **Endpoint:** `GET /api/v1/paymentEntity-batches`
 
 Support the following filters:
 
 1. Last 3 months:
-   - `GET /api/v1/payment-batches?period=LAST_3_MONTHS`
+   - `GET /api/v1/paymentEntity-batches?period=LAST_3_MONTHS`
 2. Last 6 months:
-   - `GET /api/v1/payment-batches?period=LAST_6_MONTHS`
+   - `GET /api/v1/paymentEntity-batches?period=LAST_6_MONTHS`
 3. Custom date range:
-   - `GET /api/v1/payment-batches?fromDate=2026-01-01&toDate=2026-06-30`
+   - `GET /api/v1/paymentEntity-batches?fromDate=2026-01-01&toDate=2026-06-30`
 
 Response should include:
 
@@ -471,7 +567,7 @@ After a batch is submitted:
 
 1. Create asynchronous processing task.
 2. Use Virtual Thread Executor.
-3. Worker invokes SOAP payment service.
+3. Worker invokes SOAP paymentEntity service.
 4. Simulate response if SOAP service unavailable.
 5. Update individual transaction statuses.
 6. Update overall batch metrics.

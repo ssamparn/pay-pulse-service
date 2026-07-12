@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(builderMethodName = "create")
-public class Payment {
+public class PaymentEntity {
 
     @Id
     private String paymentId;
