@@ -2,8 +2,8 @@ package com.paypulse.platform.service;
 
 import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
-import com.paypulse.platform.persistence.entity.PaymentEntity;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
+import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
 import com.paypulse.platform.persistence.repository.PaymentTransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class BatchPaymentStatusService {
                 });
 
         // Fetch all payments for the batch using in-memory filtering for compatibility.
-        List<PaymentEntity> paymentEntities = paymentTransactionRepository.findAll().stream()
+        List<PaymentTransactionEntity> paymentEntities = paymentTransactionRepository.findAll().stream()
                 .filter(paymentEntity -> batchId.equals(paymentEntity.getBatchId()))
                 .toList();
         log.debug("Found {} payments for batchId: {}", paymentEntities.size(), batchId);
@@ -78,7 +78,7 @@ public class BatchPaymentStatusService {
         // Get last error message
         String lastErrorMessage = paymentEntities.stream()
                 .filter(p -> p.getStatus() == BatchStatus.FAILED)
-                .map(PaymentEntity::getPaymentReference)
+                .map(PaymentTransactionEntity::getPaymentReference)
                 .filter(message -> message != null && !message.isBlank())
                 .findFirst()
                 .orElse(null);
@@ -107,8 +107,8 @@ public class BatchPaymentStatusService {
         );
 
         PaymentBatchStatusResponse.Links links = new PaymentBatchStatusResponse.Links(
-                "/api/v1/payment-batches/" + batchId + "/payments",
-                "/api/v1/payment-batches/" + batchId + "/payments?status=FAILED"
+                "/api/v1/batch-payment/" + batchId + "/payments",
+                "/api/v1/batch-payment/" + batchId + "/payments?status=FAILED"
         );
 
         PaymentBatchStatusResponse response = new PaymentBatchStatusResponse(

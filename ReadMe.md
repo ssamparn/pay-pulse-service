@@ -285,7 +285,7 @@ SOAP Historical Service
 
 ## Database Model
 
-### `payment_batch`
+### `payment_batch_entity`
 
 - `batch_id`
 - `merchant_id`
@@ -309,7 +309,7 @@ SOAP Historical Service
 - `completed_at`
 - `updated_at`
 
-### `payment_transaction`
+### `payment_transaction_entity`
 
 - `payment_id`
 - `beneficiary_id`

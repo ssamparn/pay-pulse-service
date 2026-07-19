@@ -43,7 +43,7 @@ public class PaymentBatchRestController {
 	 */
 	@PostMapping("/batch-payment")
 	public ResponseEntity<PaymentBatchCreateResponse> createPaymentBatch(@Valid @RequestBody PaymentBatchCreateRequest request) {
-		log.info("POST /api/v1/payment-batch - Creating batch payment request with batchId: {}", request.batchId());
+		log.info("POST /api/v1/batch-payment - Creating batch payment request with batchId: {}", request.batchId());
 
 		PaymentBatchCreateResponse response = batchPaymentInitiationService.createBatch(request);
 
@@ -52,7 +52,7 @@ public class PaymentBatchRestController {
 
 		return ResponseEntity
 				.accepted()
-				.location(URI.create("/api/v1/batch-payment/" + response.batchId()))
+				.location(URI.create("/api/v1/batch-payment/" + response.batchId() + "/status"))
 				.body(response);
 	}
 

@@ -2,8 +2,8 @@ package com.paypulse.platform.service;
 
 import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
-import com.paypulse.platform.persistence.entity.PaymentEntity;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
+import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
 import com.paypulse.platform.persistence.repository.PaymentTransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -121,7 +121,7 @@ public class HistoricalBatchPaymentService {
      * Converts PaymentBatch entity to BatchItem DTO.
      */
     private PaymentBatchListResponse.BatchItem toBatchItem(PaymentBatchEntity batch) {
-        List<PaymentEntity> paymentEntities = paymentTransactionRepository.findByBatchId(batch.getBatchId());
+        List<PaymentTransactionEntity> paymentEntities = paymentTransactionRepository.findByBatchId(batch.getBatchId());
 
         long successfulCount = paymentEntities.stream()
                 .filter(p -> p.getStatus() == BatchStatus.COMPLETED)
@@ -143,8 +143,8 @@ public class HistoricalBatchPaymentService {
                 (int) failedCount,
                 batch.getCreatedAt(),
                 batch.getUpdatedAt(),
-                "/api/v1/payment-batches/" + batch.getBatchId() + "/status",
-                "/api/v1/payment-batches/" + batch.getBatchId() + "/payments"
+                "/api/v1/batch-payment/" + batch.getBatchId() + "/status",
+                "/api/v1/batch-payment/" + batch.getBatchId() + "/payments"
         );
     }
 

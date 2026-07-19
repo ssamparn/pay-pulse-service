@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,10 +16,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
+@Table(name = "payment_entity")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(builderMethodName = "create")
-public class PaymentEntity {
+public class PaymentTransactionEntity {
 
     @Id
     private String paymentId;
@@ -41,3 +43,4 @@ public class PaymentEntity {
     private LocalDateTime processedAt;
     private LocalDateTime updatedAt;
 }
+

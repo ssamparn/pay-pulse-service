@@ -3,8 +3,8 @@ package com.paypulse.platform.service;
 import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
 import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
-import com.paypulse.platform.persistence.entity.PaymentEntity;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
+import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
 import com.paypulse.platform.persistence.repository.PaymentTransactionRepository;
 import com.paypulse.platform.persistence.service.IdempotencyService;
@@ -49,7 +49,7 @@ public class BatchPaymentInitiationService {
                     existingBatch.getBatchId(),
                     existingBatch.getStatus(),
                     existingBatch.getCreatedAt(),
-                    "/api/v1/payment-batches/" + existingBatch.getBatchId() + "/status",
+                    "/api/v1/batch-payment/" + existingBatch.getBatchId() + "/status",
                     false
             );
         }
@@ -82,8 +82,8 @@ public class BatchPaymentInitiationService {
                 savedBatch.getBatchId(), savedBatch.getExternalBatchId(), savedBatch.getStatus());
 
         // Step 4: Create individual payment entities
-        List<PaymentEntity> paymentEntities = request.payments().stream()
-                .map(paymentItem -> PaymentEntity.create()
+        List<PaymentTransactionEntity> paymentEntities = request.payments().stream()
+                .map(paymentItem -> PaymentTransactionEntity.create()
                         .paymentId(generatePaymentId())
                         .externalPaymentId(paymentItem.paymentId())
                         .batchId(savedBatch.getBatchId())
@@ -110,7 +110,7 @@ public class BatchPaymentInitiationService {
                 savedBatch.getBatchId(),
                 savedBatch.getStatus(),
                 savedBatch.getCreatedAt(),
-                "/api/v1/payment-batches/" + savedBatch.getBatchId() + "/status",
+                "/api/v1/batch-payment/" + savedBatch.getBatchId() + "/status",
                 false  // isDuplicate = false (new batch)
         );
     }
