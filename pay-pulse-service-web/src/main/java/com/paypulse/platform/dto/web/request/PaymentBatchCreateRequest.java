@@ -21,7 +21,7 @@ import java.util.List;
  *
  */
 @ValidBatchTotal
-public record BatchPaymentCreationRequest(
+public record PaymentBatchCreateRequest(
         @NotBlank(message = "Batch Id is required")
         String batchId,
 

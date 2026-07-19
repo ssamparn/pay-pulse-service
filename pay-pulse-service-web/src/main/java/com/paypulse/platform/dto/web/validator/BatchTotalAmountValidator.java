@@ -1,6 +1,6 @@
 package com.paypulse.platform.dto.web.validator;
 
-import com.paypulse.platform.dto.web.request.BatchPaymentCreationRequest;
+import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.slf4j.Slf4j;
@@ -9,16 +9,16 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 @Slf4j
-public class BatchTotalAmountValidator implements ConstraintValidator<ValidBatchTotal, BatchPaymentCreationRequest> {
+public class BatchTotalAmountValidator implements ConstraintValidator<ValidBatchTotal, PaymentBatchCreateRequest> {
 
     @Override
-    public boolean isValid(BatchPaymentCreationRequest request, ConstraintValidatorContext context) {
+    public boolean isValid(PaymentBatchCreateRequest request, ConstraintValidatorContext context) {
         if (request == null || request.payments() == null || request.payments().isEmpty()) {
             return true; // Let @NotEmpty and @NotNull handle null/empty cases
         }
 
         BigDecimal calculatedTotal = request.payments().stream()
-                .map(BatchPaymentCreationRequest.PaymentItemRequest::amount)
+                .map(PaymentBatchCreateRequest.PaymentItemRequest::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
 

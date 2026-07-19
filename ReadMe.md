@@ -125,7 +125,7 @@ PostgreSQL            Background Worker
 ```json
 {
   "batchId": "BP-20260709-00001",
-  "status": "IN_PROGRESS",
+  "status": "PROCESSING",
   "summary": {
     "totalTransactions": 500,
     "successfulTransactions": 320,
@@ -306,6 +306,7 @@ SOAP Historical Service
 - `pending_transactions`
 - `progress_percentage`
 - `created_at`
+- `completed_at`
 - `updated_at`
 
 ### `payment_transaction`
@@ -545,7 +546,7 @@ The system is an orchestration layer and does **not** perform paymentEntity proc
 ```json
 {
   "batchId": "BP-20260709-000001",
-  "batchStatus": "IN_PROGRESS",
+  "batchStatus": "PROCESSING",
   "totalTransactions": 100,
   "successfulTransactions": 50,
   "failedTransactions": 5,
@@ -658,7 +659,7 @@ Implement SOAP adapters using Spring Web Services and provide mock implementatio
 **Batch status values**
 
 - `PENDING`
-- `IN_PROGRESS`
+- `PROCESSING`
 - `COMPLETED`
 - `FAILED`
 - `PARTIALLY_COMPLETED`
@@ -666,7 +667,7 @@ Implement SOAP adapters using Spring Web Services and provide mock implementatio
 **Calculation rules**
 
 - `PENDING` -> all transactions pending
-- `IN_PROGRESS` -> at least one transaction processing
+- `PROCESSING` -> at least one transaction is being processed
 - `COMPLETED` -> all transactions successful
 - `FAILED` -> all transactions failed
 - `PARTIALLY_COMPLETED` -> combination of success and failure

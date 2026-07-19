@@ -1,8 +1,8 @@
 package com.paypulse.platform.service;
 
 import com.paypulse.platform.dto.common.BatchStatus;
-import com.paypulse.platform.dto.web.request.BatchPaymentCreationRequest;
-import com.paypulse.platform.dto.web.response.BatchPaymentCreationResponse;
+import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
 import com.paypulse.platform.persistence.entity.PaymentEntity;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
@@ -36,7 +36,7 @@ public class BatchPaymentInitiationService {
      * @param request The payment batch creation request
      * @return PaymentBatchCreateResponse containing batch ID, status, and tracking URL
      */
-    public BatchPaymentCreationResponse createBatch(BatchPaymentCreationRequest request) {
+    public PaymentBatchCreateResponse createBatch(PaymentBatchCreateRequest request) {
         log.debug("Creating payment batch with idempotencyKey: {}", request.idempotencyKey());
 
         // Step 1: Check for duplicate submission (idempotency)
@@ -45,7 +45,7 @@ public class BatchPaymentInitiationService {
             log.warn("Duplicate batch submission detected. IdempotencyKey: {}, ExistingBatchId: {}",
                     request.idempotencyKey(), existingBatch.getBatchId());
 
-            return new BatchPaymentCreationResponse(
+            return new PaymentBatchCreateResponse(
                     existingBatch.getBatchId(),
                     existingBatch.getStatus(),
                     existingBatch.getCreatedAt(),
@@ -106,7 +106,7 @@ public class BatchPaymentInitiationService {
         idempotencyService.storeIdempotencyMapping(request.idempotencyKey(), savedBatch.getBatchId());
 
         // Return response
-        return new BatchPaymentCreationResponse(
+        return new PaymentBatchCreateResponse(
                 savedBatch.getBatchId(),
                 savedBatch.getStatus(),
                 savedBatch.getCreatedAt(),

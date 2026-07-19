@@ -43,7 +43,12 @@ public class PaymentBatchEntity {
     private String idempotencyKey;
     private Integer paymentsCount;
     private Integer totalTransactions;
+    private Integer successfulTransactions;
+    private Integer failedTransactions;
+    private Integer pendingTransactions;
+    private Integer progressPercentage;
 
     private LocalDateTime createdAt;
+    private LocalDateTime completedAt;
     private LocalDateTime updatedAt;
 }

@@ -1,7 +1,7 @@
 package com.paypulse.platform.api;
 
-import com.paypulse.platform.dto.web.request.BatchPaymentCreationRequest;
-import com.paypulse.platform.dto.web.response.BatchPaymentCreationResponse;
+import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
 import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
 import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
 
@@ -35,17 +35,17 @@ public class PaymentBatchRestController {
 	private final HistoricalBatchPaymentService historicalBatchPaymentService;
 
 	/**
-	 * Initiates a new payment batch with the provided details.
+	 * Initiates a new batch payment with the provided details.
 	 * Validates the request, creates the batch, and initializes individual payments with PENDING status.
 	 *
 	 * @param request The payment batch creation request containing batch and payment details
 	 * @return 202 Accepted with batch details and status tracking URL
 	 */
 	@PostMapping("/batch-payment")
-	public ResponseEntity<BatchPaymentCreationResponse> createPaymentBatch(@Valid @RequestBody BatchPaymentCreationRequest request) {
+	public ResponseEntity<PaymentBatchCreateResponse> createPaymentBatch(@Valid @RequestBody PaymentBatchCreateRequest request) {
 		log.info("POST /api/v1/payment-batch - Creating batch payment request with batchId: {}", request.batchId());
 
-		BatchPaymentCreationResponse response = batchPaymentInitiationService.createBatch(request);
+		PaymentBatchCreateResponse response = batchPaymentInitiationService.createBatch(request);
 
 		log.info("Payment batch created successfully. BatchId: {}, Status: {}, IsDuplicate: {}",
 				response.batchId(), response.status(), response.isDuplicate());
