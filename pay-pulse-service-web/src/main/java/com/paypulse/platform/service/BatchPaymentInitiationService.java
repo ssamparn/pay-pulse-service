@@ -1,8 +1,8 @@
 package com.paypulse.platform.service;
 
 import com.paypulse.platform.dto.common.BatchStatus;
-import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
-import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
+import com.paypulse.platform.dto.web.request.BatchPaymentCreationRequest;
+import com.paypulse.platform.dto.web.response.BatchPaymentCreationResponse;
 import com.paypulse.platform.persistence.entity.PaymentEntity;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
@@ -36,7 +36,7 @@ public class BatchPaymentInitiationService {
      * @param request The payment batch creation request
      * @return PaymentBatchCreateResponse containing batch ID, status, and tracking URL
      */
-    public PaymentBatchCreateResponse createBatch(PaymentBatchCreateRequest request) {
+    public BatchPaymentCreationResponse createBatch(BatchPaymentCreationRequest request) {
         log.debug("Creating payment batch with idempotencyKey: {}", request.idempotencyKey());
 
         // Step 1: Check for duplicate submission (idempotency)
@@ -45,7 +45,7 @@ public class BatchPaymentInitiationService {
             log.warn("Duplicate batch submission detected. IdempotencyKey: {}, ExistingBatchId: {}",
                     request.idempotencyKey(), existingBatch.getBatchId());
 
-            return new PaymentBatchCreateResponse(
+            return new BatchPaymentCreationResponse(
                     existingBatch.getBatchId(),
                     existingBatch.getStatus(),
                     existingBatch.getCreatedAt(),
@@ -72,7 +72,7 @@ public class BatchPaymentInitiationService {
                 .batchDescription(request.batchDescription())
                 .requestedBy(request.requestedBy())
                 .idempotencyKey(request.idempotencyKey())
-                .paymentCount(request.payments().size())
+                .paymentsCount(request.payments().size())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -93,7 +93,6 @@ public class BatchPaymentInitiationService {
                         .amount(paymentItem.amount())
                         .currency(request.currency())
                         .paymentReference(paymentItem.paymentReference())
-                        .description(paymentItem.description())
                         .status(BatchStatus.PENDING)  // Individual payment status
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
@@ -107,7 +106,7 @@ public class BatchPaymentInitiationService {
         idempotencyService.storeIdempotencyMapping(request.idempotencyKey(), savedBatch.getBatchId());
 
         // Return response
-        return new PaymentBatchCreateResponse(
+        return new BatchPaymentCreationResponse(
                 savedBatch.getBatchId(),
                 savedBatch.getStatus(),
                 savedBatch.getCreatedAt(),

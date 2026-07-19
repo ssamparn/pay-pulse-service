@@ -21,18 +21,15 @@ import java.util.List;
  *
  */
 @ValidBatchTotal
-public record PaymentBatchCreateRequest(
+public record BatchPaymentCreationRequest(
+        @NotBlank(message = "Batch Id is required")
+        String batchId,
+
         @NotBlank(message = "Merchant ID is required")
         String merchantId,
 
         @NotBlank(message = "Customer ID is required")
         String customerId,
-
-        @NotBlank(message = "Batch Id is required")
-        String batchId,
-
-        @NotBlank(message = "Idempotency key is required")
-        String idempotencyKey,
 
         @NotNull(message = "Total amount is required")
         @DecimalMin(value = "0.01", message = "Total amount must be at least 0.01")
@@ -56,6 +53,9 @@ public record PaymentBatchCreateRequest(
         @NotBlank(message = "Requested by is required")
         @Email(message = "Requested by must be a valid email address")
         String requestedBy,
+
+        @NotBlank(message = "Idempotency key is required")
+        String idempotencyKey,
 
         @NotEmpty(message = "At least one payment is required")
         @Size(min = 1, max = 1000, message = "A batch may contain at most 1000 payments")

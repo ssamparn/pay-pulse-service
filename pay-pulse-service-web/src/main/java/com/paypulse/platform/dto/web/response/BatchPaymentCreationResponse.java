@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * Response DTO for batch payment creation.
  */
-public record PaymentBatchCreateResponse(
+public record BatchPaymentCreationResponse(
         String batchId,
         BatchStatus status,
         LocalDateTime createdAt,

@@ -4,16 +4,17 @@
 
 PayPulse is a **Batch Payment Orchestration Platform**.
 
-It does not process paymentEntities directly. Instead, it orchestrates the full batch paymentEntity lifecycle:
+It does not process payments directly. Instead, it orchestrates the full batch payment lifecycle:
 
-1. Users submit a batch paymentEntity request.
+1. Users submit a batch payment request.
 2. PayPulse validates the request & immediately returns `202 Accepted`.
-3. PayPulse stores the request in postgresql database.
-4. A background worker asynchronously calls an external SOAP service.
+3. PayPulse creates the batch and transactions from the request
+4. Batch and transaction data gets persisted in postgresql database.
+4. Database scheduler trigger background workers, which in turn asynchronously calls external SOAP services.
 5. The SOAP service processes transactions in the batch.
 6. PayPulse tracks transaction outcomes and derives batch status.
-7. Batch and transaction data are persisted in PostgreSQL.
-8. Users can query live status and historical batch paymentEntities.
+7. Batch and transaction data are persisted / updated in PostgreSQL database.
+8. Users can query live status and historical batch payment entities.
 
 ---
 
@@ -40,16 +41,20 @@ PostgreSQL            Background Worker
 
 ### 1) Submit Batch Payment
 
-- **Purpose:** Initiate a new paymentEntity batch
-- **Endpoint:** `POST /api/v1/paymentEntity-batch`
+- **Purpose:** Initiate a new batch payment
+- **Endpoint:** `POST /api/v1/batch-payment`
 - **Behavior:**
   - Validate payload
-  - Create batch
-  - Create transactions
-  - Persist in PostgreSQL
-  - Assign status `PENDING`
-  - Trigger async worker
-  - Return `202 Accepted`
+  - Immediately returns `202 Accepted`
+  - In the background, the following steps are performed:
+    - Create batch
+    - Create transactions
+    - Assign status `PENDING`
+    - Persist in PostgreSQL database
+    - Database scheduler will query for all the `PENDING` batches.
+    - An Async worker triggers the SOAP service for processing payments within the batch.
+    - The SOAP service processes the transactions and returns the outcome.
+    - PayPulse updates the transaction statuses and derives the overall batch status.
 
 **Request**
 
@@ -65,7 +70,7 @@ PostgreSQL            Background Worker
   "executionDate": "2026-07-15",
   "batchDescription": "July invoices batch",
   "requestedBy": "user@merchant.com",
-  "paymentEntities": [
+  "payments": [
     {
       "paymentId": "PAY-001",
       "beneficiaryId": "BENEFICIARY-001",
@@ -113,7 +118,7 @@ PostgreSQL            Background Worker
 ### 2) Batch Status
 
 - **Purpose:** Retrieve real-time batch status
-- **Endpoint:** `GET /api/v1/paymentEntity-batches/{batchId}/status`
+- **Endpoint:** `GET /api/v1/batch-payment/{batchId}/status`
 
 **Sample Response**
 
@@ -138,8 +143,8 @@ PostgreSQL            Background Worker
     "lastErrorMessage": "IBAN validation failed"
   },
   "links": {
-    "paymentDetails": "/api/v1/paymentEntity-batches/BP-20260709-00001/paymentEntities",
-    "failedPayments": "/api/v1/paymentEntity-batches/BP-20260709-00001/paymentEntities?status=FAILED"
+    "paymentDetails": "/api/v1/batch-payment/BP-20260709-00001/payments",
+    "failedPayments": "/api/v1/batch-payment/BP-20260709-00001/payments?status=FAILED"
   }
 }
 ```
@@ -147,7 +152,7 @@ PostgreSQL            Background Worker
 ### 3) Historical Batch Retrieval
 
 - **Purpose:** Retrieve submitted batches for a time window
-- **Endpoint:** `GET /api/v1/paymentEntity-batches`
+- **Endpoint:** `GET /api/v1/batch-payment`
 
 **Supported Filters**
 
@@ -247,15 +252,17 @@ SOAP Historical Service
 ## Asynchronous Processing Flow
 
 1. User submits batch (`POST` request).
-2. PayPulse persists:
+2. PayPulse returns immediately: `202 Accepted` after due validation of the request.
+3. PayPulse creates batch and transaction entities from the request & assigns initial status:
    - `Batch = PENDING`
    - `Transactions = PENDING`
-3. PayPulse returns immediately: `202 Accepted`.
-4. Background worker starts (`BatchProcessorWorker`).
-5. Worker invokes SOAP submit operation (`submitBatch(batchId)`) which performs the batch paymentEntity processing.
-6. SOAP service processes transactions inside the batch (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `PARTIALLY_COMPLETED`).
-7. Worker updates `payment_batch` and `payment_transaction` tables.
-8. Batch status is recalculated from transaction outcomes.
+4. Persist in PostgreSQL database.
+5. Database scheduler will query for all the batches with `PENDING` status.
+4. Async background worker starts (`BatchProcessorWorker`).
+5. Worker invokes SOAP submit operation (`submitBatch(batchId)`) which performs the batch payment processing.
+6. SOAP service processes transactions inside the batch and returns the outcome.
+7. Worker updates `payment_batch` and `payment_transaction` tables with statuses (`PENDING`, `PROCESSING`, `COMPLETED`, `PARTIALLY_COMPLETED`, `FAILED`) and timestamps.
+8. Batch status is recalculated from transaction outcomes as well as custom logic.
 
 **Example aggregation**
 
@@ -269,10 +276,10 @@ SOAP Historical Service
 ## Batch Status Calculation Rules
 
 - `PENDING`: all transactions are pending
-- `IN_PROGRESS`: at least one transaction is currently processing
+- `PROCESSING`: at least one transaction is currently processing
 - `COMPLETED`: all transactions succeeded
-- `FAILED`: all transactions failed
 - `PARTIALLY_COMPLETED`: mix of success and failure
+- `FAILED`: all transactions failed
 
 ---
 
@@ -280,11 +287,19 @@ SOAP Historical Service
 
 ### `payment_batch`
 
-- `id`
 - `batch_id`
-- `batch_reference`
-- `requested_by`
+- `merchant_id`
+- `customer_id`
+- `external_batch_id`
 - `status`
+- `total_amount`
+- `currency`
+- `payment_method`
+- `execution_date`
+- `batch_description`
+- `requested_by`
+- `idempotency_key`
+- `payments_count`
 - `total_transactions`
 - `successful_transactions`
 - `failed_transactions`
@@ -295,17 +310,20 @@ SOAP Historical Service
 
 ### `payment_transaction`
 
-- `id`
-- `transaction_id`
+- `payment_id`
+- `beneficiary_id`
 - `batch_id`
-- `employee_id`
+- `beneficiary_name`
+- `beneficiary_iban`
+- `external_payment_id`
 - `amount`
 - `currency`
-- `transaction_status`
-- `external_reference`
+- `payment_reference`
 - `failure_reason`
-- `processed_at`
+- `retryable`
+- `status`
 - `created_at`
+- `processed_at`
 - `updated_at`
 
 ---
@@ -319,15 +337,23 @@ SOAP Historical Service
 |                    |                     |                        |                        |
 | POST Batch         |                     |                        |                        |
 |------------------->|                     |                        |                        |
+|                    | Validates Request   |                        |                        |
+|                    |-------------------- |                        |                        |
+| 202 Accepted       |                     |                        |                        |
+|<-------------------|                     |                        |                        |
+|                    |                     |                        |                        |
 |                    | Save Batch          |                        |                        |
 |                    |-------------------->|                        |                        |
 |                    | Save Transactions   |                        |                        |
 |                    |-------------------->|                        |                        |
 |                    |                     |                        |                        |
-| 202 Accepted       |                     |                        |                        |
-|<-------------------|                     |                        |                        |
 |                    |                     |                        |                        |
-|                    | Publish Async Task  |                        |                        |
+|                    |                     |                        |                        |
+|                    |                     |                        |                        |
+|                    | DB Scheduler Triger |                        |                        |
+|                    | <-------------------|                        |                        |
+|                    |                     |                        |                        |
+|                    |                Async Worker                  |                        |
 |                    |--------------------------------------------->|                        |
 |                    |                     |                        |                        |
 |                    |                     |                        | Call SOAP Submit       |
@@ -413,8 +439,6 @@ This design demonstrates:
 - Aggregated status and progress reporting
 - Historical search with optional SOAP fallback
 - Enterprise integration patterns for legacy-to-modern systems
-
-## For portfolio, interview, or architecture discussions, this is stronger than a simple CRUD paymentEntity app because it reflects real-world financial integration and asynchronous orchestration concerns.
 
 ### Prompt: Generate PayPulse Backend Application
 

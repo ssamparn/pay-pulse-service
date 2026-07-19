@@ -78,7 +78,7 @@ public class BatchPaymentStatusService {
         // Get last error message
         String lastErrorMessage = paymentEntities.stream()
                 .filter(p -> p.getStatus() == BatchStatus.FAILED)
-                .map(PaymentEntity::getDescription)
+                .map(PaymentEntity::getPaymentReference)
                 .filter(message -> message != null && !message.isBlank())
                 .findFirst()
                 .orElse(null);

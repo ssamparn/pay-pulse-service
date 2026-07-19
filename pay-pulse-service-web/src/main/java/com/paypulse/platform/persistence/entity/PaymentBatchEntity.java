@@ -41,7 +41,9 @@ public class PaymentBatchEntity {
     private String batchDescription;
     private String requestedBy;
     private String idempotencyKey;
-    private Integer paymentCount;
+    private Integer paymentsCount;
+    private Integer totalTransactions;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

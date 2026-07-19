@@ -23,21 +23,21 @@ public class PaymentEntity {
     @Id
     private String paymentId;
 
-    private String externalPaymentId;
-    private String batchId;
     private String beneficiaryId;
+    private String batchId;
     private String beneficiaryName;
     private String beneficiaryIBAN;
+    private String externalPaymentId;
     private BigDecimal amount;
     private String currency;
     private String paymentReference;
-
-    private String description;
     private String failureReason;
     private boolean retryable; // Whether this failure can be retried
-    @Enumerated(EnumType.STRING)
 
+    @Enumerated(EnumType.STRING)
     private BatchStatus status;
+
     private LocalDateTime createdAt;
+    private LocalDateTime processedAt;
     private LocalDateTime updatedAt;
 }
