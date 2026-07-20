@@ -59,6 +59,7 @@ public class BatchPaymentInitiationService {
 
         // Step 3: Create batch entity with PENDING status
         String generatedBatchId = generateBatchId();
+        int totalTransactions = request.payments().size();
         PaymentBatchEntity paymentBatchEntity = PaymentBatchEntity.create()
                 .batchId(generatedBatchId)
                 .merchantId(request.merchantId())
@@ -72,7 +73,12 @@ public class BatchPaymentInitiationService {
                 .batchDescription(request.batchDescription())
                 .requestedBy(request.requestedBy())
                 .idempotencyKey(request.idempotencyKey())
-                .paymentsCount(request.payments().size())
+                .paymentsCount(totalTransactions)
+                .totalTransactions(totalTransactions)
+                .successfulTransactions(0)
+                .failedTransactions(0)
+                .pendingTransactions(totalTransactions)
+                .progressPercentage(0)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
