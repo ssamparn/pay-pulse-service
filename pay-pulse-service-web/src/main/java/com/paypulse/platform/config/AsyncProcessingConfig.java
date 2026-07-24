@@ -15,5 +15,10 @@ public class AsyncProcessingConfig {
     public Executor batchPersistenceExecutor() {
         return Executors.newVirtualThreadPerTaskExecutor();
     }
+
+    @Bean(name = "batchProcessingExecutor")
+    public Executor batchProcessingExecutor() {
+        return Executors.newVirtualThreadPerTaskExecutor();
+    }
 }
 

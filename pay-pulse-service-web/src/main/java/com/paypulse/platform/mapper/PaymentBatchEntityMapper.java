@@ -32,6 +32,7 @@ public class PaymentBatchEntityMapper {
                 .failedTransactions(0)
                 .pendingTransactions(totalTransactions)
                 .progressPercentage(0)
+                .recoveryAttemptCount(0)
                 .createdAt(acceptedAt)
                 .updatedAt(acceptedAt)
                 .build();

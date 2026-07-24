@@ -14,12 +14,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @Entity
 @Table(
         name = "payment_batch",
@@ -94,6 +96,9 @@ public class PaymentBatchEntity {
 
     @Column(name = "progress_percentage", nullable = false)
     private Integer progressPercentage;
+
+    @Column(name = "recovery_attempt_count", nullable = false)
+    private Integer recoveryAttemptCount;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -22,3 +22,16 @@ spring:
     default-schema: public
     schemas: public
     create-schemas: true
+
+paypulse:
+  processing:
+    scheduler:
+      batch-size: 50
+      fixed-delay-millis: 5000
+      initial-delay-millis: 10000
+      stuck-batch-recovery-batch-size: 50
+      stuck-batch-timeout-millis: 300000
+      stuck-batch-recovery-fixed-delay-millis: 30000
+      stuck-batch-recovery-initial-delay-millis: 20000
+      max-recovery-attempts: 3
+
