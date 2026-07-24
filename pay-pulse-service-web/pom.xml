@@ -19,6 +19,7 @@
         <java.version>25</java.version>
         <spring-cloud.version>2025.1.2</spring-cloud.version>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <mockito.version>5.20.0</mockito.version>
     </properties>
 
     <dependencies>
@@ -100,6 +101,12 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -15,7 +15,6 @@ It does not process payments directly. Instead, it orchestrates the full batch p
 6. PayPulse tracks transaction outcomes and derives batch status.
 7. Batch and transaction data are persisted / updated in PostgreSQL database.
 8. Users can query live status and historical batch payment entities.
-
 ---
 
 ## Core Components
@@ -425,6 +424,43 @@ com.paypulse.platform
 │
 │── PayPulseServiceWebApplication
 ```
+
+## Local Docker Compose Setup
+
+Use Docker Compose from the repository root to start PostgreSQL for local development and debugging.
+
+### 1) Start PostgreSQL
+
+```sh
+cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
+docker compose -f docker-compose.yaml up -d postgres
+```
+
+### 2) (Optional) Start pgAdmin for DB inspection
+
+```sh
+cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
+docker compose -f docker-compose.yaml --profile debug up -d pgadmin
+```
+
+pgAdmin UI: `http://localhost:5050`  
+Default login: `admin@paypulse.local` / `admin`
+
+### 3) Verify service status and logs
+
+```sh
+cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
+docker compose -f docker-compose.yaml ps
+docker compose -f docker-compose.yaml logs -f postgres
+```
+
+### 4) Stop services
+
+```sh
+cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
+docker compose -f docker-compose.yaml down
+```
+
 
 ---
 
