@@ -1,7 +1,8 @@
 package com.paypulse.platform.infrastructure.worker;
 
-import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.mapper.PaymentBatchEntityMapper;
+import com.paypulse.platform.mapper.PaymentTransactionEntityMapper;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -26,6 +26,8 @@ public class BatchPaymentProcessingWorker {
 	private final PaymentBatchRepository paymentBatchRepository;
 	private final PaymentTransactionRepository paymentTransactionRepository;
 	private final IdempotencyService idempotencyService;
+	private final PaymentBatchEntityMapper paymentBatchEntityMapper;
+	private final PaymentTransactionEntityMapper paymentTransactionEntityMapper;
 
 	@Async("batchPersistenceExecutor")
 	@Transactional
@@ -35,50 +37,13 @@ public class BatchPaymentProcessingWorker {
 			return;
 		}
 
-		int totalTransactions = request.payments().size();
-
-		PaymentBatchEntity paymentBatchEntity = PaymentBatchEntity.create()
-				.batchId(generatedBatchId)
-				.merchantId(request.merchantId())
-				.customerId(request.customerId())
-				.externalBatchId(request.batchId())
-				.status(BatchStatus.PENDING)
-				.totalAmount(request.totalAmount())
-				.currency(request.currency())
-				.paymentMethod(request.paymentMethod())
-				.executionDate(request.executionDate())
-				.batchDescription(request.batchDescription())
-				.requestedBy(request.requestedBy())
-				.idempotencyKey(request.idempotencyKey())
-				.paymentsCount(totalTransactions)
-				.totalTransactions(totalTransactions)
-				.successfulTransactions(0)
-				.failedTransactions(0)
-				.pendingTransactions(totalTransactions)
-				.progressPercentage(0)
-				.createdAt(acceptedAt)
-				.updatedAt(acceptedAt)
-				.build();
+		PaymentBatchEntity paymentBatchEntity = paymentBatchEntityMapper.toPaymentBatchEntity(request, generatedBatchId, acceptedAt);
 
 		try {
 			PaymentBatchEntity savedBatch = paymentBatchRepository.save(paymentBatchEntity);
 
-			List<PaymentTransactionEntity> paymentTransactions = request.payments().stream()
-					.map(paymentItem -> PaymentTransactionEntity.create()
-							.paymentId(generatePaymentId())
-							.externalPaymentId(paymentItem.paymentId())
-							.batchId(savedBatch.getBatchId())
-							.beneficiaryId(paymentItem.beneficiaryId())
-							.beneficiaryName(paymentItem.beneficiaryName())
-							.beneficiaryIBAN(paymentItem.beneficiaryIBAN())
-							.amount(paymentItem.amount())
-							.currency(request.currency())
-							.paymentReference(paymentItem.paymentReference())
-							.status(BatchStatus.PENDING)
-							.createdAt(acceptedAt)
-							.updatedAt(acceptedAt)
-							.build())
-					.toList();
+			List<PaymentTransactionEntity> paymentTransactions =
+					paymentTransactionEntityMapper.toPaymentTransactionEntities(request, savedBatch.getBatchId(), acceptedAt);
 
 			paymentTransactionRepository.saveAll(paymentTransactions);
 			idempotencyService.storeIdempotencyMapping(request.idempotencyKey(), savedBatch.getBatchId());
@@ -96,7 +61,4 @@ public class BatchPaymentProcessingWorker {
 		}
 	}
 
-	private String generatePaymentId() {
-		return "PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-	}
 }
