@@ -1,9 +1,9 @@
 package com.paypulse.platform.service;
 
-import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
 import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
 import com.paypulse.platform.infrastructure.worker.BatchPaymentProcessingWorker;
+import com.paypulse.platform.mapper.PaymentBatchCreateResponseMapper;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.service.IdempotencyService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ public class BatchPaymentInitiationService {
 
     private final IdempotencyService idempotencyService;
     private final BatchPaymentProcessingWorker batchPaymentProcessingWorker;
+    private final PaymentBatchCreateResponseMapper paymentBatchCreateResponseMapper;
 
     /**
      * Validates a new payment batch submission, performs idempotency checks,
@@ -47,25 +48,13 @@ public class BatchPaymentInitiationService {
             log.warn("Duplicate batch submission detected. IdempotencyKey: {}, ExistingBatchId: {}",
                     request.idempotencyKey(), existingBatch.getBatchId());
 
-            return new PaymentBatchCreateResponse(
-                    existingBatch.getBatchId(),
-                    existingBatch.getStatus(),
-                    existingBatch.getCreatedAt(),
-                    "/api/v1/batch-payment/" + existingBatch.getBatchId() + "/status",
-                    true
-            );
+            return paymentBatchCreateResponseMapper.toDuplicateResponse(existingBatch);
         }
 
         log.debug("Request validation passed for batch: {}", request.batchId());
         batchPaymentProcessingWorker.persistBatchAsync(request, generatedBatchId, acceptedAt);
 
-        return new PaymentBatchCreateResponse(
-                generatedBatchId,
-                BatchStatus.PENDING,
-                acceptedAt,
-                "/api/v1/batch-payment/" + generatedBatchId + "/status",
-                false
-        );
+        return paymentBatchCreateResponseMapper.toAcceptedResponse(generatedBatchId, acceptedAt);
     }
 
     /**
