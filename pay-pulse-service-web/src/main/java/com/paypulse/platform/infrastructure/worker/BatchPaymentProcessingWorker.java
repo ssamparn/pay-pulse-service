@@ -30,7 +30,7 @@ public class BatchPaymentProcessingWorker {
 	@Async("batchPersistenceExecutor")
 	@Transactional
 	public void persistBatchAsync(PaymentBatchCreateRequest request, String generatedBatchId, LocalDateTime acceptedAt) {
-		if (idempotencyService.getExistingBatch(request.idempotencyKey()) != null) {
+		if (idempotencyService.getPersistedBatch(request.idempotencyKey()) != null) {
 			log.info("Skipping async persistence because batch already exists for idempotencyKey={}", request.idempotencyKey());
 			return;
 		}

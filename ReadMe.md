@@ -89,7 +89,7 @@ PostgreSQL            Background Worker
       "description": "Payment for services"
     },
     {
-      "paymentId": "PAY-002",
+      "paymentId": "PAY-003",
       "beneficiaryId": "BENEFICIARY-003",
       "beneficiaryName": "Vendor C",
       "beneficiaryIBAN": "DE89370400440532013000",

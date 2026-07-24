@@ -19,30 +19,14 @@ public class IdempotencyService {
     private final PaymentBatchRepository paymentBatchRepository;
     private final Map<String, PendingSubmission> pendingSubmissions = new ConcurrentHashMap<>();
 
-    public PaymentBatchEntity getExistingBatch(String idempotencyKey) {
-        PaymentBatchEntity persistedBatch = paymentBatchRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
-        if (persistedBatch != null) {
-            return persistedBatch;
-        }
-
-        PendingSubmission pendingSubmission = pendingSubmissions.get(idempotencyKey);
-        if (pendingSubmission == null) {
-            return null;
-        }
-
-        return PaymentBatchEntity.create()
-                .batchId(pendingSubmission.batchId())
-                .status(BatchStatus.PENDING)
-                .createdAt(pendingSubmission.createdAt())
-                .updatedAt(pendingSubmission.createdAt())
-                .idempotencyKey(idempotencyKey)
-                .build();
+    public PaymentBatchEntity getPersistedBatch(String idempotencyKey) {
+        return paymentBatchRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
     }
 
     public PaymentBatchEntity reserveSubmission(String idempotencyKey, String batchId, LocalDateTime createdAt) {
-        PaymentBatchEntity existingBatch = getExistingBatch(idempotencyKey);
-        if (existingBatch != null) {
-            return existingBatch;
+        PaymentBatchEntity persistedBatch = getPersistedBatch(idempotencyKey);
+        if (persistedBatch != null) {
+            return persistedBatch;
         }
 
         PendingSubmission newSubmission = new PendingSubmission(batchId, createdAt);
