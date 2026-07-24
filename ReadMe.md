@@ -66,7 +66,7 @@ PostgreSQL            Background Worker
   "totalAmount": 3500.00,
   "currency": "EUR",
   "paymentMethod": "SEPA",
-  "executionDate": "2026-07-15",
+  "executionDate": "2026-08-15",
   "batchDescription": "July invoices batch",
   "requestedBy": "user@merchant.com",
   "payments": [
@@ -432,24 +432,20 @@ Use Docker Compose from the repository root to start PostgreSQL for local develo
 ### 1) Start PostgreSQL
 
 ```sh
-cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
-docker compose -f docker-compose.yaml up -d postgres
+$ docker compose -f docker-compose.yaml up -d postgres
 ```
 
 ### 2) (Optional) Start pgAdmin for DB inspection
 
 ```sh
-cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
-docker compose -f docker-compose.yaml --profile debug up -d pgadmin
+$ docker compose -f docker-compose.yaml --profile debug up -d pgadmin
 ```
 
-pgAdmin UI: `http://localhost:5050`  
 Default login: `admin@paypulse.local` / `admin`
 
 ### 3) Verify service status and logs
 
 ```sh
-cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
 docker compose -f docker-compose.yaml ps
 docker compose -f docker-compose.yaml logs -f postgres
 ```
@@ -457,7 +453,6 @@ docker compose -f docker-compose.yaml logs -f postgres
 ### 4) Stop services
 
 ```sh
-cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service
 docker compose -f docker-compose.yaml down
 ```
 
