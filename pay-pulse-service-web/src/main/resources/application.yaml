@@ -19,3 +19,6 @@ spring:
     locations: classpath:db/migration
     validate-migration-naming: true
     clean-disabled: true
+    default-schema: public
+    schemas: public
+    create-schemas: true
