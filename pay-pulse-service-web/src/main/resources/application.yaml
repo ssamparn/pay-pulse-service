@@ -24,6 +24,9 @@ spring:
     create-schemas: true
 
 paypulse:
+  soap:
+    batch-payment:
+      uri: http://localhost:7070/ws
   processing:
     scheduler:
       batch-size: 50

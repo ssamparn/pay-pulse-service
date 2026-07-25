@@ -23,53 +23,107 @@ public class BatchStatusMetricsCalculator {
                 .filter(payment -> payment.getStatus() == BatchStatus.FAILED)
                 .count();
 
-        int pendingTransactions = (int) paymentTransactions.stream()
+        int pendingOnlyTransactions = (int) paymentTransactions.stream()
                 .filter(payment -> payment.getStatus() == BatchStatus.PENDING)
                 .count();
 
-        int retryableFailures = 0;
+        int processingTransactions = (int) paymentTransactions.stream()
+                .filter(payment -> payment.getStatus() == BatchStatus.PROCESSING)
+                .count();
+
+        int unfinishedTransactions = pendingOnlyTransactions + processingTransactions;
+
+        BatchStatus derivedBatchStatus = deriveBatchStatus(
+                totalTransactions,
+                successfulTransactions,
+                failedTransactions,
+                pendingOnlyTransactions,
+                processingTransactions
+        );
+
+        int retryableFailures = (int) paymentTransactions.stream()
+                .filter(payment -> payment.getStatus() == BatchStatus.FAILED)
+                .filter(PaymentTransactionEntity::isRetryable)
+                .count();
         int permanentFailures = failedTransactions - retryableFailures;
 
         String lastErrorMessage = paymentTransactions.stream()
                 .filter(payment -> payment.getStatus() == BatchStatus.FAILED)
-                .map(PaymentTransactionEntity::getPaymentReference)
+                .map(PaymentTransactionEntity::getFailureReason)
                 .filter(message -> message != null && !message.isBlank())
                 .findFirst()
                 .orElse(null);
 
-        LocalDateTime estimatedCompletionTime = estimateCompletionTime(batch, pendingTransactions, totalTransactions);
+        LocalDateTime estimatedCompletionTime = estimateCompletionTime(batch, unfinishedTransactions, totalTransactions);
 
         return new BatchStatusMetrics(
                 totalTransactions,
                 successfulTransactions,
                 failedTransactions,
-                pendingTransactions,
+                unfinishedTransactions,
+                processingTransactions,
                 retryableFailures,
                 permanentFailures,
+                derivedBatchStatus,
                 lastErrorMessage,
                 estimatedCompletionTime
         );
     }
 
-    private LocalDateTime estimateCompletionTime(PaymentBatchEntity batch, int pendingTransactions, int totalTransactions) {
-        if (pendingTransactions == 0) {
+    private LocalDateTime estimateCompletionTime(PaymentBatchEntity batch, int unfinishedTransactions, int totalTransactions) {
+        if (unfinishedTransactions == 0) {
             return batch.getUpdatedAt();
         }
 
-        if (pendingTransactions == totalTransactions) {
+        if (unfinishedTransactions == totalTransactions) {
             long estimatedSeconds = totalTransactions * 5L;
             return LocalDateTime.now().plusSeconds(estimatedSeconds);
         }
 
-        int completedTransactions = totalTransactions - pendingTransactions;
+        int completedTransactions = totalTransactions - unfinishedTransactions;
         long elapsedMinutes = ChronoUnit.MINUTES.between(batch.getCreatedAt(), LocalDateTime.now());
         if (elapsedMinutes == 0) {
             elapsedMinutes = 1;
         }
 
         long avgSecondsPerTransaction = (elapsedMinutes * 60) / completedTransactions;
-        long estimatedRemainingSeconds = avgSecondsPerTransaction * pendingTransactions;
+        long estimatedRemainingSeconds = avgSecondsPerTransaction * unfinishedTransactions;
         return LocalDateTime.now().plusSeconds(estimatedRemainingSeconds);
+    }
+
+    private BatchStatus deriveBatchStatus(
+            int totalTransactions,
+            int successfulTransactions,
+            int failedTransactions,
+            int pendingOnlyTransactions,
+            int processingTransactions
+    ) {
+        if (totalTransactions == 0) {
+            return BatchStatus.PENDING;
+        }
+
+        if (pendingOnlyTransactions == totalTransactions && processingTransactions == 0) {
+            return BatchStatus.PENDING;
+        }
+
+        int unfinishedTransactions = pendingOnlyTransactions + processingTransactions;
+        if (unfinishedTransactions > 0) {
+            return BatchStatus.PROCESSING;
+        }
+
+        if (successfulTransactions == totalTransactions) {
+            return BatchStatus.COMPLETED;
+        }
+
+        if (failedTransactions == totalTransactions) {
+            return BatchStatus.FAILED;
+        }
+
+        if (successfulTransactions > 0 && failedTransactions > 0) {
+            return BatchStatus.PARTIALLY_COMPLETED;
+        }
+
+        return BatchStatus.PROCESSING;
     }
 
     public record BatchStatusMetrics(
@@ -77,8 +131,10 @@ public class BatchStatusMetricsCalculator {
             Integer successfulTransactions,
             Integer failedTransactions,
             Integer pendingTransactions,
+            Integer processingTransactions,
             Integer retryableFailures,
             Integer permanentFailures,
+            BatchStatus derivedBatchStatus,
             String lastErrorMessage,
             LocalDateTime estimatedCompletionTime
     ) {

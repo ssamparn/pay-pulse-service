@@ -23,4 +23,8 @@
 
     <dependencies>
     </dependencies>
+
+    <modules>
+        <module>batch-payment-mock-web-service</module>
+    </modules>
 </project>

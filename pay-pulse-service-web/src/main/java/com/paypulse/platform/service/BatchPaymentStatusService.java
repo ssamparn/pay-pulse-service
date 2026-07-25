@@ -60,6 +60,7 @@ public class BatchPaymentStatusService {
 
         PaymentBatchStatusResponse response = paymentBatchStatusResponseMapper.toResponse(
                 batch,
+                metrics.derivedBatchStatus(),
                 metrics.totalTransactions(),
                 metrics.successfulTransactions(),
                 metrics.failedTransactions(),
@@ -72,7 +73,7 @@ public class BatchPaymentStatusService {
 
         log.info("Status retrieved for batchId: {}, Status: {}, Success: {}, Failed: {}, Pending: {}",
                 batchId,
-                batch.getStatus(),
+                metrics.derivedBatchStatus(),
                 metrics.successfulTransactions(),
                 metrics.failedTransactions(),
                 metrics.pendingTransactions());

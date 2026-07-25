@@ -12,6 +12,7 @@ import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
 import com.paypulse.platform.persistence.repository.PaymentTransactionRepository;
 import com.paypulse.platform.persistence.service.IdempotencyService;
+import com.paypulse.platform.service.BatchStatusMetricsCalculator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class BatchPaymentProcessingWorker {
 	private final PaymentTransactionEntityMapper paymentTransactionEntityMapper;
 	private final BatchPaymentSoapService batchPaymentSoapService;
 	private final BatchProcessingSchedulerProperties schedulerProperties;
+	private final BatchStatusMetricsCalculator batchStatusMetricsCalculator;
 
 	@Async("batchPersistenceExecutor")
 	@Transactional
@@ -86,7 +88,7 @@ public class BatchPaymentProcessingWorker {
 		markTransactionsAsProcessing(transactions, processingStartedAt);
 
 		try {
-			SoapBatchProcessingResult soapResult = batchPaymentSoapService.submitBatch(batchId, transactions);
+			SoapBatchProcessingResult soapResult = batchPaymentSoapService.submitBatch(batch, transactions);
 			applySoapOutcome(batch, transactions, soapResult, LocalDateTime.now());
 		} catch (RuntimeException exception) {
 			handleSoapProcessingFailure(batch, transactions, processingStartedAt, exception);
@@ -197,26 +199,21 @@ public class BatchPaymentProcessingWorker {
 	}
 
 	private void updateBatchAggregates(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions, LocalDateTime updatedAt) {
-		int totalTransactions = transactions.size();
-		int successfulTransactions = (int) transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.COMPLETED).count();
-		int failedTransactions = (int) transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.FAILED).count();
-		int pendingTransactions = (int) transactions.stream()
-				.filter(tx -> tx.getStatus() == BatchStatus.PENDING || tx.getStatus() == BatchStatus.PROCESSING)
-				.count();
+		BatchStatusMetricsCalculator.BatchStatusMetrics metrics = batchStatusMetricsCalculator.calculate(batch, transactions);
+		int completedTransactions = metrics.successfulTransactions() + metrics.failedTransactions();
+		int progressPercentage = metrics.totalTransactions() == 0
+				? 0
+				: (int) ((completedTransactions * 100.0) / metrics.totalTransactions());
 
-		BatchStatus finalStatus = deriveBatchStatus(totalTransactions, successfulTransactions, failedTransactions, pendingTransactions);
-		int completedTransactions = successfulTransactions + failedTransactions;
-		int progressPercentage = totalTransactions == 0 ? 0 : (int) ((completedTransactions * 100.0) / totalTransactions);
-
-		batch.setStatus(finalStatus);
-		batch.setTotalTransactions(totalTransactions);
-		batch.setPaymentsCount(totalTransactions);
-		batch.setSuccessfulTransactions(successfulTransactions);
-		batch.setFailedTransactions(failedTransactions);
-		batch.setPendingTransactions(pendingTransactions);
+		batch.setStatus(metrics.derivedBatchStatus());
+		batch.setTotalTransactions(metrics.totalTransactions());
+		batch.setPaymentsCount(metrics.totalTransactions());
+		batch.setSuccessfulTransactions(metrics.successfulTransactions());
+		batch.setFailedTransactions(metrics.failedTransactions());
+		batch.setPendingTransactions(metrics.pendingTransactions());
 		batch.setProgressPercentage(progressPercentage);
 		batch.setUpdatedAt(updatedAt);
-		batch.setCompletedAt(isTerminalStatus(finalStatus) ? updatedAt : null);
+		batch.setCompletedAt(isTerminalStatus(metrics.derivedBatchStatus()) ? updatedAt : null);
 
 		paymentBatchRepository.save(batch);
 	}
@@ -248,26 +245,6 @@ public class BatchPaymentProcessingWorker {
 		updateBatchAggregates(batch, transactions, updatedAt);
 	}
 
-	private BatchStatus deriveBatchStatus(
-			int totalTransactions,
-			int successfulTransactions,
-			int failedTransactions,
-			int pendingTransactions
-	) {
-		if (pendingTransactions == totalTransactions) {
-			return BatchStatus.PENDING;
-		}
-		if (pendingTransactions > 0) {
-			return BatchStatus.PROCESSING;
-		}
-		if (successfulTransactions == totalTransactions) {
-			return BatchStatus.COMPLETED;
-		}
-		if (failedTransactions == totalTransactions) {
-			return BatchStatus.FAILED;
-		}
-		return BatchStatus.PARTIALLY_COMPLETED;
-	}
 
 	private boolean isTerminalStatus(BatchStatus status) {
 		return status == BatchStatus.COMPLETED

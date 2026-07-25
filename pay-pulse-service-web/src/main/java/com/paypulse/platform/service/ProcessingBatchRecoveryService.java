@@ -23,6 +23,7 @@ public class ProcessingBatchRecoveryService {
     private final PaymentBatchRepository paymentBatchRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final BatchProcessingSchedulerProperties schedulerProperties;
+    private final BatchStatusMetricsCalculator batchStatusMetricsCalculator;
 
     @Transactional
     public int recoverStuckProcessingBatches() {
@@ -73,19 +74,19 @@ public class ProcessingBatchRecoveryService {
         }
         paymentTransactionRepository.saveAll(transactions);
 
-        long successful = transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.COMPLETED).count();
-        long failed = transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.FAILED).count();
-        long pending = transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.PENDING).count();
+        BatchStatusMetricsCalculator.BatchStatusMetrics metrics = batchStatusMetricsCalculator.calculate(batch, transactions);
 
-        batch.setStatus(BatchStatus.PENDING);
-        batch.setSuccessfulTransactions((int) successful);
-        batch.setFailedTransactions((int) failed);
-        batch.setPendingTransactions((int) pending);
-        batch.setTotalTransactions(transactions.size());
-        batch.setPaymentsCount(transactions.size());
-        batch.setProgressPercentage(transactions.isEmpty() ? 0 : (int) (((successful + failed) * 100.0) / transactions.size()));
+        batch.setStatus(metrics.derivedBatchStatus());
+        batch.setSuccessfulTransactions(metrics.successfulTransactions());
+        batch.setFailedTransactions(metrics.failedTransactions());
+        batch.setPendingTransactions(metrics.pendingTransactions());
+        batch.setTotalTransactions(metrics.totalTransactions());
+        batch.setPaymentsCount(metrics.totalTransactions());
+        int completed = metrics.successfulTransactions() + metrics.failedTransactions();
+        int progress = metrics.totalTransactions() == 0 ? 0 : (int) ((completed * 100.0) / metrics.totalTransactions());
+        batch.setProgressPercentage(progress);
         batch.setRecoveryAttemptCount(nextAttempt);
-        batch.setCompletedAt(null);
+        batch.setCompletedAt(isTerminalStatus(metrics.derivedBatchStatus()) ? recoveredAt : null);
         batch.setUpdatedAt(recoveredAt);
 
         paymentBatchRepository.save(batch);
@@ -112,17 +113,17 @@ public class ProcessingBatchRecoveryService {
         }
         paymentTransactionRepository.saveAll(transactions);
 
-        long successful = transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.COMPLETED).count();
-        long failed = transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.FAILED).count();
-
+        BatchStatusMetricsCalculator.BatchStatusMetrics metrics = batchStatusMetricsCalculator.calculate(batch, transactions);
         batch.setRecoveryAttemptCount(recoveryAttemptCount);
-        batch.setSuccessfulTransactions((int) successful);
-        batch.setFailedTransactions((int) failed);
-        batch.setPendingTransactions(0);
-        batch.setTotalTransactions(transactions.size());
-        batch.setPaymentsCount(transactions.size());
-        batch.setProgressPercentage(transactions.isEmpty() ? 0 : (int) (((successful + failed) * 100.0) / transactions.size()));
-        batch.setStatus(successful > 0 ? BatchStatus.PARTIALLY_COMPLETED : BatchStatus.FAILED);
+        batch.setSuccessfulTransactions(metrics.successfulTransactions());
+        batch.setFailedTransactions(metrics.failedTransactions());
+        batch.setPendingTransactions(metrics.pendingTransactions());
+        batch.setTotalTransactions(metrics.totalTransactions());
+        batch.setPaymentsCount(metrics.totalTransactions());
+        int completed = metrics.successfulTransactions() + metrics.failedTransactions();
+        int progress = metrics.totalTransactions() == 0 ? 0 : (int) ((completed * 100.0) / metrics.totalTransactions());
+        batch.setProgressPercentage(progress);
+        batch.setStatus(metrics.derivedBatchStatus());
         batch.setCompletedAt(failedAt);
         batch.setUpdatedAt(failedAt);
 
@@ -134,6 +135,12 @@ public class ProcessingBatchRecoveryService {
                 batch.getStatus()
         );
         return true;
+    }
+
+    private boolean isTerminalStatus(BatchStatus status) {
+        return status == BatchStatus.COMPLETED
+                || status == BatchStatus.FAILED
+                || status == BatchStatus.PARTIALLY_COMPLETED;
     }
 }
 

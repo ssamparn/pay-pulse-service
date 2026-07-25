@@ -1,5 +1,6 @@
 package com.paypulse.platform.mapper;
 
+import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ public class PaymentBatchStatusResponseMapper {
 
     public PaymentBatchStatusResponse toResponse(
             PaymentBatchEntity batch,
+            BatchStatus batchStatus,
             Integer totalTransactions,
             Integer successfulTransactions,
             Integer failedTransactions,
@@ -48,7 +50,7 @@ public class PaymentBatchStatusResponseMapper {
 
         return new PaymentBatchStatusResponse(
                 batchId,
-                batch.getStatus(),
+                batchStatus,
                 summary,
                 timing,
                 failureInfo,
