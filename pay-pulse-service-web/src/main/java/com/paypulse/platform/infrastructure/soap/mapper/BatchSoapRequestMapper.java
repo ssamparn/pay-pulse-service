@@ -1,6 +1,6 @@
 package com.paypulse.platform.infrastructure.soap.mapper;
 
-import com.paypulse.platform.infrastructure.soap.model.req.SubmitBatchReq;
+import com.paypulse.platform.infrastructure.soap.model.req.ProcessBatchPaymentReq;
 import com.paypulse.platform.infrastructure.soap.model.req.SubmitPaymentTxnReq;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
@@ -11,8 +11,8 @@ import java.util.List;
 @Component
 public class BatchSoapRequestMapper {
 
-    public SubmitBatchReq toSubmitBatchReq(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
-        SubmitBatchReq request = new SubmitBatchReq();
+    public ProcessBatchPaymentReq toProcessBatchPaymentReq(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
+        ProcessBatchPaymentReq request = new ProcessBatchPaymentReq();
         request.setBatchId(batch.getBatchId());
         request.setExternalBatchId(batch.getExternalBatchId());
         request.setMerchantId(batch.getMerchantId());

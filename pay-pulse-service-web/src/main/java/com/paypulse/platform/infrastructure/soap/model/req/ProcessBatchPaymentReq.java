@@ -10,9 +10,9 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement(name = "SubmitBatchReq", namespace = SoapContractConstants.NAMESPACE)
+@XmlRootElement(name = "ProcessBatchPaymentReq", namespace = SoapContractConstants.NAMESPACE)
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SubmitBatchReq {
+public class ProcessBatchPaymentReq {
 
     @XmlElement(required = true)
     private String batchId;
@@ -136,4 +136,5 @@ public class SubmitBatchReq {
         this.transactions = transactions;
     }
 }
+
 

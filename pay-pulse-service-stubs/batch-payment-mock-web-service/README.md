@@ -11,16 +11,16 @@ It is intended to be called by `pay-pulse-service-web` (the orchestrator), and i
 
 ## SOAP Operation
 
-- SOAP Action: not required by this stub
+- SOAP Action: Not required by this stub
 - Namespace: `http://paypulse.platform.com/soap/batch-payment`
-- Request root element: `SubmitBatchReq`
-- Response root element: `SubmitBatchRpy`
+- Request root element: `ProcessBatchPaymentReq`
+- Response root element: `ProcessBatchPaymentRpy`
 
 ## Start the Stub
 
 ```bash
-cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service/pay-pulse-service-stubs/batch-payment-mock-web-service
-./mvnw spring-boot:run
+$ cd pay-pulse-service-stubs/batch-payment-mock-web-service/
+$ ./mvnw spring-boot:run
 ```
 
 ## Postman Setup
@@ -39,7 +39,7 @@ cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service/pay-puls
                   xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-SCENARIO-001</batchId>
       <externalBatchId>EXT-SCENARIO-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -72,7 +72,7 @@ cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service/pay-puls
           <paymentReference>Invoice INV-1001</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -83,7 +83,7 @@ cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service/pay-puls
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
   <SOAP-ENV:Header/>
   <SOAP-ENV:Body>
-    <ns3:SubmitBatchRpy xmlns:ns3="http://paypulse.platform.com/soap/batch-payment">
+    <ns3:ProcessBatchPaymentRpy xmlns:ns3="http://paypulse.platform.com/soap/batch-payment">
       <batchId>BATCH-SCENARIO-001</batchId>
       <processedAt>2026-07-25T15:31:44.632552</processedAt>
       <transactions>
@@ -100,7 +100,7 @@ cd /Users/sashank/Personal/projects/backend/pay-pulse/pay-pulse-service/pay-puls
           <processedAt>2026-07-25T15:31:44.633408237</processedAt>
         </transaction>
       </transactions>
-    </ns3:SubmitBatchRpy>
+    </ns3:ProcessBatchPaymentRpy>
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ```
@@ -206,7 +206,7 @@ Start with this shell and replace only marked fields for each scenario:
                   xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-SCENARIO-001</batchId>
       <externalBatchId>EXT-SCENARIO-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -228,8 +228,18 @@ Start with this shell and replace only marked fields for each scenario:
           <currency>EUR</currency>
           <paymentReference>Invoice INV-1001</paymentReference>
         </transaction>
+        <transaction>
+          <paymentId>PAY-002</paymentId>
+          <externalPaymentId>EXT-PAY-002</externalPaymentId>
+          <beneficiaryId>BEN-001</beneficiaryId>
+          <beneficiaryName>Vendor B</beneficiaryName>
+          <beneficiaryIban>DE89370400440532013001</beneficiaryIban>
+          <amount>2500.00</amount>
+          <currency>EUR</currency>
+          <paymentReference>Invoice INV-1001</paymentReference>
+        </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -406,7 +416,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-OUTAGE-001</batchId>
       <externalBatchId>EXT-OUTAGE-001</externalBatchId>
       <merchantId>MERCHANT-SOAP_DOWN</merchantId>
@@ -429,7 +439,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1001</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -440,7 +450,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-DUP-001</batchId>
       <externalBatchId>EXT-DUP-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -473,7 +483,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice B</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -484,7 +494,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-INVALID-AMOUNT-001</batchId>
       <externalBatchId>EXT-INVALID-AMOUNT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -507,7 +517,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1003</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -518,7 +528,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-UNSUPPORTED-CURRENCY-001</batchId>
       <externalBatchId>EXT-UNSUPPORTED-CURRENCY-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -541,7 +551,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1004</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -552,7 +562,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-METHOD-LIMIT-001</batchId>
       <externalBatchId>EXT-METHOD-LIMIT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -575,7 +585,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1005</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -586,7 +596,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-INVALID-IBAN-001</batchId>
       <externalBatchId>EXT-INVALID-IBAN-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -609,7 +619,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1006</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -620,7 +630,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-ACCOUNT-BLOCK-001</batchId>
       <externalBatchId>EXT-ACCOUNT-BLOCK-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -643,7 +653,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>ACCOUNT_CLOSED</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -654,7 +664,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-TIMEOUT-001</batchId>
       <externalBatchId>EXT-TIMEOUT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -677,7 +687,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>UPSTREAM_TEMP</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -688,7 +698,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-COMPLIANCE-001</batchId>
       <externalBatchId>EXT-COMPLIANCE-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -711,7 +721,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1009</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -722,7 +732,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-WEEKEND-001</batchId>
       <externalBatchId>EXT-WEEKEND-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -745,7 +755,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1010</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -756,7 +766,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-RISK-001</batchId>
       <externalBatchId>EXT-RISK-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -779,7 +789,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>URGENT CASH</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -790,7 +800,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:bat="http://paypulse.platform.com/soap/batch-payment">
   <soapenv:Header/>
   <soapenv:Body>
-    <bat:SubmitBatchReq>
+    <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-SUCCESS-001</batchId>
       <externalBatchId>EXT-SUCCESS-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
@@ -813,7 +823,7 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
           <paymentReference>Invoice INV-1012</paymentReference>
         </transaction>
       </transactions>
-    </bat:SubmitBatchReq>
+    </bat:ProcessBatchPaymentReq>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -821,8 +831,8 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
 ## Integration Expectation with `pay-pulse-service-web`
 
 The web app maps:
-- `SubmitBatchReq` from batch + transaction entities
-- `SubmitBatchRpy` back into internal SOAP outcome DTOs
+- `ProcessBatchPaymentReq` from batch + transaction entities
+- `ProcessBatchPaymentRpy` back into internal SOAP outcome DTOs
 
 Those mapped outcomes are then used to update:
 - transaction statuses (`COMPLETED` / `FAILED`)
@@ -834,8 +844,7 @@ Those mapped outcomes are then used to update:
 - If you get 404:
   - verify URL is exactly `http://localhost:7070/ws`
 - If SOAP parse fails:
-  - ensure request root is `SubmitBatchReq` in namespace `http://paypulse.platform.com/soap/batch-payment`
+  - ensure request root is `ProcessBatchPaymentReq` in namespace `http://paypulse.platform.com/soap/batch-payment`
 - If no responses in orchestrator:
   - confirm `pay-pulse-service-web` has
     - `paypulse.soap.batch-payment.uri: http://localhost:7070/ws`
-

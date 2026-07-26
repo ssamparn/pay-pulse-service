@@ -3,8 +3,8 @@ package com.paypulse.platform.infrastructure.soap;
 import com.paypulse.platform.infrastructure.soap.client.AbstractSpringWsSoapClient;
 import com.paypulse.platform.infrastructure.soap.mapper.BatchSoapRequestMapper;
 import com.paypulse.platform.infrastructure.soap.mapper.BatchSoapResponseMapper;
-import com.paypulse.platform.infrastructure.soap.model.req.SubmitBatchReq;
-import com.paypulse.platform.infrastructure.soap.model.rpy.SubmitBatchRpy;
+import com.paypulse.platform.infrastructure.soap.model.req.ProcessBatchPaymentReq;
+import com.paypulse.platform.infrastructure.soap.model.rpy.ProcessBatchPaymentRpy;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import jakarta.annotation.PostConstruct;
@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class BatchPaymentSoapClient extends AbstractSpringWsSoapClient<SubmitBatchReq, SubmitBatchRpy> {
+public class BatchPaymentSoapClient extends AbstractSpringWsSoapClient<ProcessBatchPaymentReq, ProcessBatchPaymentRpy> {
 
 	private final BatchSoapRequestMapper batchSoapRequestMapper;
 	private final BatchSoapResponseMapper batchSoapResponseMapper;
@@ -41,16 +41,16 @@ public class BatchPaymentSoapClient extends AbstractSpringWsSoapClient<SubmitBat
 	}
 
 	public SoapBatchProcessingResult submitBatch(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
-		SubmitBatchReq request = batchSoapRequestMapper.toSubmitBatchReq(batch, transactions);
-		SubmitBatchRpy response = send(request);
+		ProcessBatchPaymentReq request = batchSoapRequestMapper.toProcessBatchPaymentReq(batch, transactions);
+		ProcessBatchPaymentRpy response = send(request);
 		log.info("SOAP gateway processed batchId={} with {} transactions", batch.getBatchId(), transactions.size());
 		return batchSoapResponseMapper.toSoapBatchProcessingResult(response);
 	}
 
 	@Override
-	protected SubmitBatchRpy mapResponse(Object response) {
-		if (response instanceof SubmitBatchRpy submitBatchRpy) {
-			return submitBatchRpy;
+	protected ProcessBatchPaymentRpy mapResponse(Object response) {
+		if (response instanceof ProcessBatchPaymentRpy processBatchPaymentRpy) {
+			return processBatchPaymentRpy;
 		}
 		throw new IllegalStateException("Unexpected SOAP response type: " + response);
 	}

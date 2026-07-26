@@ -1,7 +1,7 @@
 package com.paypulse.platform.infrastructure.soap.mapper;
 
 import com.paypulse.platform.infrastructure.soap.SoapBatchProcessingResult;
-import com.paypulse.platform.infrastructure.soap.model.rpy.SubmitBatchRpy;
+import com.paypulse.platform.infrastructure.soap.model.rpy.ProcessBatchPaymentRpy;
 import com.paypulse.platform.infrastructure.soap.model.rpy.SubmitPaymentTxnRpy;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class BatchSoapResponseMapper {
 
-    public SoapBatchProcessingResult toSoapBatchProcessingResult(SubmitBatchRpy response) {
+    public SoapBatchProcessingResult toSoapBatchProcessingResult(ProcessBatchPaymentRpy response) {
         LocalDateTime batchProcessedAt = parseDateTime(response.getProcessedAt(), LocalDateTime.now());
 
         List<SoapBatchProcessingResult.SoapTransactionResult> transactions = response.getTransactions().stream()

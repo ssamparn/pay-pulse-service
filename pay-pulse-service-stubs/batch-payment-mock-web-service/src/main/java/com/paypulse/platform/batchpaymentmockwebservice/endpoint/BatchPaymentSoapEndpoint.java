@@ -1,8 +1,8 @@
 package com.paypulse.platform.batchpaymentmockwebservice.endpoint;
 
 import com.paypulse.platform.batchpaymentmockwebservice.soap.model.SoapContractConstants;
-import com.paypulse.platform.batchpaymentmockwebservice.soap.model.req.SubmitBatchReq;
-import com.paypulse.platform.batchpaymentmockwebservice.soap.model.rpy.SubmitBatchRpy;
+import com.paypulse.platform.batchpaymentmockwebservice.soap.model.req.ProcessBatchPaymentReq;
+import com.paypulse.platform.batchpaymentmockwebservice.soap.model.rpy.ProcessBatchPaymentRpy;
 import com.paypulse.platform.batchpaymentmockwebservice.service.BatchPaymentScenarioProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +18,10 @@ public class BatchPaymentSoapEndpoint {
 
     private final BatchPaymentScenarioProcessor batchPaymentScenarioProcessor;
 
-    @PayloadRoot(namespace = SoapContractConstants.NAMESPACE, localPart = "SubmitBatchReq")
+    @PayloadRoot(namespace = SoapContractConstants.NAMESPACE, localPart = "ProcessBatchPaymentReq")
     @ResponsePayload
-    public SubmitBatchRpy submitBatch(@RequestPayload SubmitBatchReq request) {
-        SubmitBatchRpy response = batchPaymentScenarioProcessor.processBatch(request);
+    public ProcessBatchPaymentRpy processBatchPayment(@RequestPayload ProcessBatchPaymentReq request) {
+        ProcessBatchPaymentRpy response = batchPaymentScenarioProcessor.processBatch(request);
 
         log.info("SOAP stub processed batchId={} and returned {} transaction outcomes",
                 request.getBatchId(),

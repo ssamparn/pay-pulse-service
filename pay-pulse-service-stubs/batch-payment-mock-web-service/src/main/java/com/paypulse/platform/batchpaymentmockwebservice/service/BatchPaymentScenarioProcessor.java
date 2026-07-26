@@ -1,8 +1,8 @@
 package com.paypulse.platform.batchpaymentmockwebservice.service;
 
-import com.paypulse.platform.batchpaymentmockwebservice.soap.model.req.SubmitBatchReq;
+import com.paypulse.platform.batchpaymentmockwebservice.soap.model.req.ProcessBatchPaymentReq;
 import com.paypulse.platform.batchpaymentmockwebservice.soap.model.req.SubmitPaymentTxnReq;
-import com.paypulse.platform.batchpaymentmockwebservice.soap.model.rpy.SubmitBatchRpy;
+import com.paypulse.platform.batchpaymentmockwebservice.soap.model.rpy.ProcessBatchPaymentRpy;
 import com.paypulse.platform.batchpaymentmockwebservice.soap.model.rpy.SubmitPaymentTxnRpy;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.SplittableRandom;
 @Service
 public class BatchPaymentScenarioProcessor {
 
-    public SubmitBatchRpy processBatch(SubmitBatchReq request) {
+    public ProcessBatchPaymentRpy processBatch(ProcessBatchPaymentReq request) {
         LocalDateTime now = LocalDateTime.now();
         SplittableRandom random = new SplittableRandom(seedFromBatch(request));
         LocalDate executionDate = parseExecutionDate(request.getExecutionDate());
@@ -42,7 +42,7 @@ public class BatchPaymentScenarioProcessor {
                 ))
                 .toList();
 
-        SubmitBatchRpy response = new SubmitBatchRpy();
+        ProcessBatchPaymentRpy response = new ProcessBatchPaymentRpy();
         response.setBatchId(request.getBatchId());
         response.setProcessedAt(now.toString());
         response.setTransactions(transactionReplies);
@@ -50,7 +50,7 @@ public class BatchPaymentScenarioProcessor {
     }
 
     private SubmitPaymentTxnRpy evaluateTransaction(
-            SubmitBatchReq batch,
+            ProcessBatchPaymentReq batch,
             SubmitPaymentTxnReq transaction,
             Set<String> seenExternalPaymentIds,
             boolean downstreamOutage,
@@ -150,7 +150,7 @@ public class BatchPaymentScenarioProcessor {
         return Math.min(score, 100);
     }
 
-    private long seedFromBatch(SubmitBatchReq request) {
+    private long seedFromBatch(ProcessBatchPaymentReq request) {
         long seed = 17L;
         seed = 31 * seed + safeHash(request.getBatchId());
         seed = 31 * seed + safeHash(request.getIdempotencyKey());
