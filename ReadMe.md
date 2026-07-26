@@ -432,30 +432,38 @@ Use Docker Compose from the repository root to start PostgreSQL for local develo
 ### 1) Start PostgreSQL
 
 ```sh
-$ docker compose -f docker-compose.yaml up -d postgres
+$ docker compose -f docker-compose.yaml up
 ```
 
-### 2) (Optional) Start pgAdmin for DB inspection
+### 2) Verify service status and logs
 
 ```sh
-$ docker compose -f docker-compose.yaml --profile debug up -d pgadmin
+$ docker compose -f docker-compose.yaml ps
+$ docker compose -f docker-compose.yaml logs -f postgres
 ```
 
-Default login: `admin@paypulse.local` / `admin`
-
-### 3) Verify service status and logs
+### 3) Stop services
 
 ```sh
-docker compose -f docker-compose.yaml ps
-docker compose -f docker-compose.yaml logs -f postgres
+$ docker compose -f docker-compose.yaml down
+$ docker-compose down --rmi all --volumes
 ```
 
-### 4) Stop services
+### Connect from pgAdmin
 
-```sh
-docker compose -f docker-compose.yaml down
+| Setting              | Value         |
+| -------------------- |---------------|
+| Host name/address    | `localhost`   |
+| Port                 | `5432`        |
+| Maintenance database | `paypulse_db` |
+| Username             | `postgres`    |
+| Password             | `password`    |
+
+### Example Connection String
+
+```text
+postgresql://postgres:<your-password>@localhost:5432/paypulse_db
 ```
-
 
 ---
 

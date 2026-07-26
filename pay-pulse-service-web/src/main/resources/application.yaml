@@ -1,11 +1,13 @@
 spring:
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties]
   application:
     name: pay-pulse-web-api
   datasource:
-    url: jdbc:postgresql://localhost:5432/paypulse_db
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:paypulse_db}
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
   jpa:
     hibernate:
       ddl-auto: none
