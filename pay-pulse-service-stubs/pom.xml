@@ -26,5 +26,6 @@
 
     <modules>
         <module>batch-payment-mock-web-service</module>
+        <module>historical-batches-mock-web-service</module>
     </modules>
 </project>

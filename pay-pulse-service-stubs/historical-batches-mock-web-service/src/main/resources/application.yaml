@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: historical-batches-mock-web-service
