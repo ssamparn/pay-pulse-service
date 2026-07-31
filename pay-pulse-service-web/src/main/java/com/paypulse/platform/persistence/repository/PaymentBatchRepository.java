@@ -20,6 +20,8 @@ public interface PaymentBatchRepository extends JpaRepository<PaymentBatchEntity
 
 	Optional<PaymentBatchEntity> findByIdempotencyKey(String idempotencyKey);
 
+	List<PaymentBatchEntity> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime fromInclusive, LocalDateTime toInclusive);
+
 	@Query("select batch.batchId from PaymentBatchEntity batch where batch.status = :status order by batch.createdAt asc")
 	List<String> findBatchIdsByStatusOrderByCreatedAtAsc(@Param("status") BatchStatus status, Pageable pageable);
 

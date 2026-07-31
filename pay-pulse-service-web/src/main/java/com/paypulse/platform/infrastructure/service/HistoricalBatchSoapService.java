@@ -1,7 +1,7 @@
 package com.paypulse.platform.infrastructure.service;
 
 import com.paypulse.platform.infrastructure.soap.HistoricalBatchSoapClient;
-import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
+import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,11 +19,26 @@ public class HistoricalBatchSoapService {
     /**
      * Fetches historical batches from external SOAP API.
      */
-    public List<PaymentBatchEntity> fetchHistoricalBatches(LocalDate fromDate, LocalDate toDate) {
-        log.info("Calling SOAP historical service. From: {}, To: {}", fromDate, toDate);
+    public List<HistoricalSoapBatchSnapshot> fetchHistoricalBatches(
+            LocalDate fromDate,
+            LocalDate toDate,
+            String period,
+            Integer page,
+            Integer pageSize,
+            boolean includeTransactions
+    ) {
+        log.info("Calling SOAP historical service. From: {}, To: {}, Period: {}, Page: {}, PageSize: {}",
+                fromDate, toDate, period, page, pageSize);
 
         try {
-            List<PaymentBatchEntity> batches = historicalBatchSoapClient.getHistoricalBatches(fromDate, toDate);
+            List<HistoricalSoapBatchSnapshot> batches = historicalBatchSoapClient.getHistoricalBatches(
+                    fromDate,
+                    toDate,
+                    period,
+                    page,
+                    pageSize,
+                    includeTransactions
+            );
             log.info("Retrieved {} batches from SOAP service", batches.size());
             return batches;
         } catch (Exception e) {

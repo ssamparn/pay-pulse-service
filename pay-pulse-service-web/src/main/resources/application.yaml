@@ -29,6 +29,8 @@ paypulse:
   soap:
     batch-payment:
       uri: http://localhost:7070/ws
+    historical-batch:
+      uri: http://localhost:7071/ws
   processing:
     scheduler:
       batch-size: 50
@@ -39,4 +41,3 @@ paypulse:
       stuck-batch-recovery-fixed-delay-millis: 30000
       stuck-batch-recovery-initial-delay-millis: 20000
       max-recovery-attempts: 3
-

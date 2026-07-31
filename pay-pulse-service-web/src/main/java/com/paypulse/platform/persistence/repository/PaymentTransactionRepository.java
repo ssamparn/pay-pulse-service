@@ -11,4 +11,6 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     List<PaymentTransactionEntity> findByBatchId(String batchId);
 
     long countByBatchIdAndStatus(String batchId, BatchStatus status);
+
+    void deleteByBatchId(String batchId);
 }
