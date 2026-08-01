@@ -11,9 +11,10 @@ It generates deterministic historical batches with realistic status mix, paginat
 
 ## SOAP Contract
 
+- SOAP Action: Not required by this stub
 - Namespace: `http://paypulse.platform.com/soap/historical-batches`
-- Request root: `RetrieveHistoricalBatchesReq`
-- Response root: `RetrieveHistoricalBatchesRpy`
+- Request root element: `RetrieveHistoricalBatchesReq`
+- Response root element: `RetrieveHistoricalBatchesRpy`
 
 ## Start the Stub
 
@@ -21,6 +22,15 @@ It generates deterministic historical batches with realistic status mix, paginat
 cd pay-pulse-service-stubs/historical-batches-mock-web-service
 ./mvnw spring-boot:run
 ```
+
+## Postman Setup
+
+1. Create a new request in Postman.
+2. Method: `POST`
+3. URL: `http://localhost:7071/ws`
+4. Headers:
+    - `Content-Type: text/xml; charset=utf-8`
+5. Body -> `raw` -> paste the SOAP envelope below.
 
 ## Request Envelope (default realistic data)
 
@@ -95,11 +105,4 @@ cd pay-pulse-service-stubs/historical-batches-mock-web-service
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ```
-
-## Postman Quick Setup
-
-- Method: `POST`
-- URL: `http://localhost:7071/ws`
-- Header: `Content-Type: text/xml; charset=utf-8`
-- Body: raw XML (use the request envelope above)
 
