@@ -15,13 +15,6 @@
 
     <name>Pay Pulse Platform - Web Api</name>
 
-    <properties>
-        <java.version>25</java.version>
-        <spring-cloud.version>2025.1.2</spring-cloud.version>
-        <testcontainers.version>1.21.4</testcontainers.version>
-        <mockito.version>5.20.0</mockito.version>
-    </properties>
-
     <dependencies>
         <!-- ===== Data Jpa ===== -->
         <dependency>
@@ -92,7 +85,11 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- ===== Database Migration ===== -->
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -146,9 +143,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>4.1.0</version>
                 <configuration>
-                    <mainClass>com.paypulse.platform.PayPulseServiceWebApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
