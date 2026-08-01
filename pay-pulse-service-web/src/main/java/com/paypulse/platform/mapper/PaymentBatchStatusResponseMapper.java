@@ -43,18 +43,12 @@ public class PaymentBatchStatusResponseMapper {
                 lastErrorMessage
         );
 
-        PaymentBatchStatusResponse.Links links = new PaymentBatchStatusResponse.Links(
-                "/api/v1/batch-payment/" + batchId + "/payments",
-                "/api/v1/batch-payment/" + batchId + "/payments?status=FAILED"
-        );
-
         return new PaymentBatchStatusResponse(
                 batchId,
                 batchStatus,
                 summary,
                 timing,
-                failureInfo,
-                links
+                failureInfo
         );
     }
 }

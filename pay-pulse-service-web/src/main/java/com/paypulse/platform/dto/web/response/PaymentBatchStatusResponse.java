@@ -9,8 +9,7 @@ public record PaymentBatchStatusResponse(
         BatchStatus status,
         Summary summary,
         Timing timing,
-        FailureInfo failureInfo,
-        Links links
+        FailureInfo failureInfo
 ) {
     public record Summary(
             Integer totalTransactions,
@@ -31,12 +30,6 @@ public record PaymentBatchStatusResponse(
             Integer retryableFailures,
             Integer permanentFailures,
             String lastErrorMessage
-    ) {
-    }
-
-    public record Links(
-            String paymentDetails,
-            String failedPayments
     ) {
     }
 }
