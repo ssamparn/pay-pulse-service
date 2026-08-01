@@ -54,6 +54,7 @@ public class IdempotencyService {
     }
 
     private record PendingSubmission(String batchId, LocalDateTime createdAt) {
+
     }
 
 }

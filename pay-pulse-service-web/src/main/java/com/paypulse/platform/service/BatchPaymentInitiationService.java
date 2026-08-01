@@ -26,7 +26,7 @@ public class BatchPaymentInitiationService {
      * Validates a new payment batch submission, performs idempotency checks based on batchId,
      * returns an accepted response immediately, and delegates persistence to a background worker.
      * Behavior:
-     * 1. Check for duplicate submission using idempotency key
+     * 1. Check for duplicate submission using batchId
      * 2. Validate the request payload
      * 3. Create an accepted response with status PENDING
      * 4. Persist batch and transaction entities asynchronously
@@ -39,13 +39,9 @@ public class BatchPaymentInitiationService {
         String generatedBatchId = generateBatchId();
         LocalDateTime acceptedAt = LocalDateTime.now();
 
-        PaymentBatchEntity existingBatch = idempotencyService.reserveSubmission(
-                request.batchId(),
-                acceptedAt
-        );
+        PaymentBatchEntity existingBatch = idempotencyService.reserveSubmission(request.batchId(), acceptedAt);
         if (existingBatch != null) {
             log.warn("Duplicate batch submission detected. ExistingBatchId: {}", existingBatch.getBatchId());
-
             return paymentBatchCreateResponseMapper.toDuplicateResponse(existingBatch);
         }
 
