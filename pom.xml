@@ -36,28 +36,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>4.1.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.46</version>
-            </dependency>
-
-            <!-- ===== Internal ===== -->
-            <dependency>
-                <groupId>com.paypulse.platform</groupId>
-                <artifactId>pay-pulse-service-model</artifactId>
-                <version>${internal-module.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.paypulse.platform</groupId>
-                <artifactId>pay-pulse-service-persistence</artifactId>
-                <version>${internal-module.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

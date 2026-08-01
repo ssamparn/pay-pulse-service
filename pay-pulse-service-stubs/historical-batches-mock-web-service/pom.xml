@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.paypulse.platform</groupId>
-        <artifactId>pay-pulse-service</artifactId>
+        <artifactId>pay-pulse-service-stubs</artifactId>
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
