@@ -23,7 +23,7 @@ public class BatchPaymentInitiationService {
     private final PaymentBatchCreateResponseMapper paymentBatchCreateResponseMapper;
 
     /**
-     * Validates a new payment batch submission, performs idempotency checks,
+     * Validates a new payment batch submission, performs idempotency checks based on batchId,
      * returns an accepted response immediately, and delegates persistence to a background worker.
      * Behavior:
      * 1. Check for duplicate submission using idempotency key
@@ -34,19 +34,17 @@ public class BatchPaymentInitiationService {
      * @return PaymentBatchCreateResponse containing batch ID, status, and tracking URL
      */
     public PaymentBatchCreateResponse createBatch(PaymentBatchCreateRequest request) {
-        log.debug("Creating payment batch with idempotencyKey: {}", request.idempotencyKey());
+        log.debug("Creating payment batch with batchId: {}", request.batchId());
 
         String generatedBatchId = generateBatchId();
         LocalDateTime acceptedAt = LocalDateTime.now();
 
         PaymentBatchEntity existingBatch = idempotencyService.reserveSubmission(
-                request.idempotencyKey(),
-                generatedBatchId,
+                request.batchId(),
                 acceptedAt
         );
         if (existingBatch != null) {
-            log.warn("Duplicate batch submission detected. IdempotencyKey: {}, ExistingBatchId: {}",
-                    request.idempotencyKey(), existingBatch.getBatchId());
+            log.warn("Duplicate batch submission detected. ExistingBatchId: {}", existingBatch.getBatchId());
 
             return paymentBatchCreateResponseMapper.toDuplicateResponse(existingBatch);
         }

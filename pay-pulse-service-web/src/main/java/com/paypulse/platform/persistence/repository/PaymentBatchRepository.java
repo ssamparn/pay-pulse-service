@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface PaymentBatchRepository extends JpaRepository<PaymentBatchEntity, String> {
 
-	Optional<PaymentBatchEntity> findByIdempotencyKey(String idempotencyKey);
+	Optional<PaymentBatchEntity> findByBatchId(String batchId);
 
 	List<PaymentBatchEntity> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime fromInclusive, LocalDateTime toInclusive);
 

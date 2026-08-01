@@ -25,7 +25,6 @@ public class PaymentBatchEntityMapper {
                 .executionDate(request.executionDate())
                 .batchDescription(request.batchDescription())
                 .requestedBy(request.requestedBy())
-                .idempotencyKey(request.idempotencyKey())
                 .paymentsCount(totalTransactions)
                 .totalTransactions(totalTransactions)
                 .successfulTransactions(0)

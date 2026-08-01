@@ -25,8 +25,9 @@ public class BatchPaymentScenarioProcessor {
         LocalDate executionDate = parseExecutionDate(request.getExecutionDate());
 
         boolean downstreamOutage = containsIgnoreCase(request.getMerchantId(), "SOAP_DOWN")
+                || containsIgnoreCase(request.getMerchantId(), "OUTAGE")
                 || containsIgnoreCase(request.getBatchId(), "SOAP_DOWN")
-                || containsIgnoreCase(request.getIdempotencyKey(), "OUTAGE");
+                || containsIgnoreCase(request.getBatchId(), "OUTAGE");
 
         Set<String> seenExternalPaymentIds = new HashSet<>();
 
@@ -153,7 +154,6 @@ public class BatchPaymentScenarioProcessor {
     private long seedFromBatch(ProcessBatchPaymentReq request) {
         long seed = 17L;
         seed = 31 * seed + safeHash(request.getBatchId());
-        seed = 31 * seed + safeHash(request.getIdempotencyKey());
         seed = 31 * seed + safeHash(request.getMerchantId());
         return seed;
     }

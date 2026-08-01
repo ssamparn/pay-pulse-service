@@ -17,7 +17,6 @@ public class BatchSoapRequestMapper {
         request.setExternalBatchId(batch.getExternalBatchId());
         request.setMerchantId(batch.getMerchantId());
         request.setCustomerId(batch.getCustomerId());
-        request.setIdempotencyKey(batch.getIdempotencyKey());
         request.setPaymentMethod(batch.getPaymentMethod().name());
         request.setExecutionDate(batch.getExecutionDate().toString());
         request.setTotalAmount(batch.getTotalAmount().toPlainString());

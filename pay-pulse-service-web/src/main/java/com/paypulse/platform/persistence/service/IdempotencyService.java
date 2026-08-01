@@ -19,20 +19,20 @@ public class IdempotencyService {
     private final PaymentBatchRepository paymentBatchRepository;
     private final Map<String, PendingSubmission> pendingSubmissions = new ConcurrentHashMap<>();
 
-    public PaymentBatchEntity getPersistedBatch(String idempotencyKey) {
-        return paymentBatchRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+    public PaymentBatchEntity getPersistedBatch(String batchId) {
+        return paymentBatchRepository.findByBatchId(batchId).orElse(null);
     }
 
-    public PaymentBatchEntity reserveSubmission(String idempotencyKey, String batchId, LocalDateTime createdAt) {
-        PaymentBatchEntity persistedBatch = getPersistedBatch(idempotencyKey);
+    public PaymentBatchEntity reserveSubmission(String batchId, LocalDateTime createdAt) {
+        PaymentBatchEntity persistedBatch = getPersistedBatch(batchId);
         if (persistedBatch != null) {
             return persistedBatch;
         }
 
         PendingSubmission newSubmission = new PendingSubmission(batchId, createdAt);
-        PendingSubmission existingSubmission = pendingSubmissions.putIfAbsent(idempotencyKey, newSubmission);
+        PendingSubmission existingSubmission = pendingSubmissions.putIfAbsent(batchId, newSubmission);
         if (existingSubmission == null) {
-            log.debug("Reserved pending submission for idempotencyKey={} and batchId={}", idempotencyKey, batchId);
+            log.debug("Reserved pending submission for batchId={}", batchId);
             return null;
         }
 
@@ -41,17 +41,16 @@ public class IdempotencyService {
                 .status(BatchStatus.PENDING)
                 .createdAt(existingSubmission.createdAt())
                 .updatedAt(existingSubmission.createdAt())
-                .idempotencyKey(idempotencyKey)
                 .build();
     }
 
-    public void storeIdempotencyMapping(String idempotencyKey, String batchId) {
-        pendingSubmissions.remove(idempotencyKey);
-        log.debug("Idempotency mapping persisted for idempotencyKey={} and batchId={}", idempotencyKey, batchId);
+    public void storeIdempotencyMapping(String batchId) {
+        pendingSubmissions.remove(batchId);
+        log.debug("Idempotency mapping persisted for batchId={}", batchId);
     }
 
-    public void clearPendingSubmission(String idempotencyKey) {
-        pendingSubmissions.remove(idempotencyKey);
+    public void clearPendingSubmission(String batchId) {
+        pendingSubmissions.remove(batchId);
     }
 
     private record PendingSubmission(String batchId, LocalDateTime createdAt) {

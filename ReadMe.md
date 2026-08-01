@@ -62,7 +62,6 @@ PostgreSQL            Background Worker
   "merchantId": "MERCHANT-12345",
   "customerId": "CUSTOMER-67890",
   "batchId": "BATCH-20260710-001",
-  "idempotencyKey": "8d83c7b4-98f3-440b-a0b0-fd741ef5d623",
   "totalAmount": 3500.00,
   "currency": "EUR",
   "paymentMethod": "SEPA",
@@ -297,7 +296,6 @@ SOAP Historical Service
 - `execution_date`
 - `batch_description`
 - `requested_by`
-- `idempotency_key`
 - `payments_count`
 - `total_transactions`
 - `successful_transactions`

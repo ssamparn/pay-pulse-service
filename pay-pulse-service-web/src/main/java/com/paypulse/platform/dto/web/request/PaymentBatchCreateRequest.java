@@ -54,9 +54,6 @@ public record PaymentBatchCreateRequest(
         @Email(message = "Requested by must be a valid email address")
         String requestedBy,
 
-        @NotBlank(message = "Idempotency key is required")
-        String idempotencyKey,
-
         @NotEmpty(message = "At least one payment is required")
         @Size(min = 1, max = 1000, message = "A batch may contain at most 1000 payments")
         List<@Valid PaymentItemRequest> payments

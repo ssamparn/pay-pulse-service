@@ -27,9 +27,6 @@ public class ProcessBatchPaymentReq {
     private String customerId;
 
     @XmlElement(required = true)
-    private String idempotencyKey;
-
-    @XmlElement(required = true)
     private String paymentMethod;
 
     @XmlElement(required = true)
@@ -78,14 +75,6 @@ public class ProcessBatchPaymentReq {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
-    }
-
-    public String getIdempotencyKey() {
-        return idempotencyKey;
-    }
-
-    public void setIdempotencyKey(String idempotencyKey) {
-        this.idempotencyKey = idempotencyKey;
     }
 
     public String getPaymentMethod() {

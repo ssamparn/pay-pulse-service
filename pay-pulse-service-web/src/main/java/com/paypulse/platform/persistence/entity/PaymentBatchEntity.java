@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 @Table(
         name = "payment_batch",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_payment_batch_idempotency_key", columnNames = "idempotency_key"),
                 @UniqueConstraint(name = "uk_payment_batch_external_batch_id", columnNames = "external_batch_id")
         },
         indexes = {
@@ -75,9 +74,6 @@ public class PaymentBatchEntity {
 
     @Column(name = "requested_by", nullable = false, length = 320)
     private String requestedBy;
-
-    @Column(name = "idempotency_key", nullable = false, length = 64)
-    private String idempotencyKey;
 
     @Column(name = "payments_count", nullable = false)
     private Integer paymentsCount;

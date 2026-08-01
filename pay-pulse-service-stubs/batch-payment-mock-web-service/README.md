@@ -44,7 +44,6 @@ $ ./mvnw spring-boot:run
       <externalBatchId>EXT-SCENARIO-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>11111111-2222-3333-4444-555555555555</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>1500.00</totalAmount>
@@ -133,7 +132,7 @@ If a condition matches earlier in the list, later rules are not evaluated for th
 
 | Scenario | Where to set | Trigger condition | Outcome | Retryable | Failure reason |
 |---|---|---|---|---|---|
-| Full downstream outage | `merchantId` or `batchId` or `idempotencyKey` | Contains `SOAP_DOWN` or `OUTAGE` (case-insensitive) | All transactions `FAILED` | `true` | `Downstream clearing network unavailable` |
+| Full downstream outage | `merchantId` or `batchId` | Contains `SOAP_DOWN` or `OUTAGE` (case-insensitive) | All transactions `FAILED` | `true` | `Downstream clearing network unavailable` |
 
 ### Transaction-Level Scenarios
 
@@ -155,14 +154,14 @@ If a condition matches earlier in the list, later rules are not evaluated for th
 
 ### Risk Score Inputs (for realistic mixed outcomes)
 
-- Base score uses deterministic seeded randomness per batch (`batchId`, `idempotencyKey`, `merchantId`).
+- Base score uses deterministic seeded randomness per batch (`batchId`, `merchantId`).
 - Additional score boosts:
   - Single-word `beneficiaryName`: `+8`
   - `paymentReference` contains one of `URGENT`, `CASH`, `CRYPTO`, `GIFT`: `+20`
 
 ### Determinism Notes
 
-- Same batch identifiers (`batchId`, `idempotencyKey`, `merchantId`) produce reproducible random branches.
+- Same batch identifiers (`batchId`, `merchantId`) produce reproducible random branches.
 - Timestamp fields (`processedAt`) still change per invocation.
 
 ### Scenario Forcing Cheat Sheet (Postman)
@@ -172,7 +171,6 @@ Use these quick overrides to force outcomes:
 - **Force full outage for all transactions**
   - `merchantId = MERCHANT-SOAP_DOWN`
   - or `batchId = BATCH-SOAP_DOWN-001`
-  - or `idempotencyKey = OUTAGE-KEY-001`
 - **Force duplicate scenario**
   - Send two `<transaction>` nodes with same `<externalPaymentId>`
 - **Force invalid amount**
@@ -211,7 +209,6 @@ Start with this shell and replace only marked fields for each scenario:
       <externalBatchId>EXT-SCENARIO-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>11111111-2222-3333-4444-555555555555</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>1500.00</totalAmount>
@@ -256,10 +253,6 @@ Alternative triggers:
 
 ```xml
 <batchId>BATCH-SOAP_DOWN-001</batchId>
-```
-
-```xml
-<idempotencyKey>OUTAGE-TEST-KEY</idempotencyKey>
 ```
 
 #### 2) Duplicate external payment id (permanent fail)
@@ -421,7 +414,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-OUTAGE-001</externalBatchId>
       <merchantId>MERCHANT-SOAP_DOWN</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>11111111-2222-3333-4444-555555555555</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>1500.00</totalAmount>
@@ -455,7 +447,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-DUP-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>22222222-3333-4444-5555-666666666666</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>1500.00</totalAmount>
@@ -499,7 +490,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-INVALID-AMOUNT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>33333333-4444-5555-6666-777777777777</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>0.00</totalAmount>
@@ -533,7 +523,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-UNSUPPORTED-CURRENCY-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>44444444-5555-6666-7777-888888888888</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>1200.00</totalAmount>
@@ -567,7 +556,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-METHOD-LIMIT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>55555555-6666-7777-8888-999999999999</idempotencyKey>
       <paymentMethod>CARD</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>6000.00</totalAmount>
@@ -601,7 +589,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-INVALID-IBAN-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>66666666-7777-8888-9999-000000000000</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>900.00</totalAmount>
@@ -635,7 +622,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-ACCOUNT-BLOCK-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>77777777-8888-9999-0000-111111111111</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>800.00</totalAmount>
@@ -669,7 +655,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-TIMEOUT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>88888888-9999-0000-1111-222222222222</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>850.00</totalAmount>
@@ -703,7 +688,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-COMPLIANCE-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>99999999-0000-1111-2222-333333333333</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>10000.00</totalAmount>
@@ -737,7 +721,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-WEEKEND-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-16</executionDate>
       <totalAmount>1200.00</totalAmount>
@@ -771,7 +754,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-RISK-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>bbbbbbbb-cccc-dddd-eeee-ffffffffffff</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-17</executionDate>
       <totalAmount>1500.00</totalAmount>
@@ -805,7 +787,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
       <externalBatchId>EXT-SUCCESS-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
-      <idempotencyKey>cccccccc-dddd-eeee-ffff-000000000000</idempotencyKey>
       <paymentMethod>SEPA</paymentMethod>
       <executionDate>2026-08-18</executionDate>
       <totalAmount>1400.00</totalAmount>

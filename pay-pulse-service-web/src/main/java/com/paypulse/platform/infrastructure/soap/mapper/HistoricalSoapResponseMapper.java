@@ -67,7 +67,6 @@ public class HistoricalSoapResponseMapper {
                 .executionDate(createdAt.toLocalDate())
                 .batchDescription("Historical SOAP imported batch")
                 .requestedBy("historical-soap-sync")
-                .idempotencyKey(generateHistoricalIdempotencyKey(soapBatch.getBatchId(), soapBatch.getExternalBatchId()))
                 .paymentsCount(totalTransactions)
                 .totalTransactions(totalTransactions)
                 .successfulTransactions(successfulTransactions)
