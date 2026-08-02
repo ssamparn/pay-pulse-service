@@ -37,8 +37,7 @@ public class PaymentBatchListResponseMapper {
                 (int) failedCount,
                 batch.getCreatedAt(),
                 batch.getUpdatedAt(),
-                "/api/v1/batch-payment/" + batch.getBatchId() + "/status",
-                "/api/v1/batch-payment/" + batch.getBatchId() + "/payments"
+                "/api/v1/batch-payment/" + batch.getBatchId() + "/status"
         );
     }
 

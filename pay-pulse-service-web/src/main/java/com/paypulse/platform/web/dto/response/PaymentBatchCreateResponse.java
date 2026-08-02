@@ -4,9 +4,6 @@ import com.paypulse.platform.common.dto.BatchStatus;
 
 import java.time.LocalDateTime;
 
-/**
- * Response DTO for batch payment creation.
- */
 public record PaymentBatchCreateResponse(
         String batchId,
         BatchStatus status,

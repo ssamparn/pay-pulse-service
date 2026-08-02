@@ -24,8 +24,7 @@ public record PaymentBatchListResponse(
             Integer failedPayments,
             LocalDateTime createdAt,
             LocalDateTime completedAt,
-            String statusUrl,
-            String detailsUrl
+            String statusUrl
     ) {
     }
 

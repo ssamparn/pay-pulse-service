@@ -51,8 +51,11 @@ public class PaymentBatchRestController {
 
 	@GetMapping("/batch-payment/{batchId}/status")
 	public ResponseEntity<PaymentBatchStatusResponse> getBatchStatus(@PathVariable String batchId) {
+		log.info("GET /api/v1/batch-payment/{}/status - Retrieving batch payment status for batchId: {}", batchId, batchId);
+
 		PaymentBatchStatusResponse response = batchPaymentStatusService.getBatchStatus(batchId);
-		log.info("Payment batch status response: {}", response);
+
+		log.info("Payment batch status response: {} for batchId: {}", response, response.batchId());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

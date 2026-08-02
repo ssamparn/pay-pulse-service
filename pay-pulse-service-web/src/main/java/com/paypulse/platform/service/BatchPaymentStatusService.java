@@ -23,19 +23,6 @@ public class BatchPaymentStatusService {
     private final PaymentBatchStatusResponseMapper paymentBatchStatusResponseMapper;
     private final BatchStatusMetricsCalculator batchStatusMetricsCalculator;
 
-    /**
-     * Retrieves the current status of a payment batch.
-     *
-     * Calculates:
-     * - Transaction counts (successful, failed, pending)
-     * - Failure breakdown (retryable vs permanent)
-     * - Estimated completion time
-     * - Links to detailed payment information
-     *
-     * @param batchId The batch ID to query
-     * @return PaymentBatchStatusResponse with current batch status and metrics
-     * @throws RuntimeException if batch not found
-     */
     @Transactional(readOnly = true)
     public PaymentBatchStatusResponse getBatchStatus(String batchId) {
         log.debug("Fetching status for batchId: {}", batchId);

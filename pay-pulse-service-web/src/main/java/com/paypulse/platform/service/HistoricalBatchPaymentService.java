@@ -35,37 +35,20 @@ public class HistoricalBatchPaymentService {
     private final HistoricalDataStalenessCalculator historicalDataStalenessCalculator;
     private final Paginator paginator;
 
-    /**
-     * Retrieves historical payment batches within specified time window.
-     *
-     * Behavior:
-     * 1. Validate and parse filter parameters (period or custom date range)
-     * 2. Check local database for cached batches
-     * 3. If data not available locally, call SOAP historical API
-     * 4. Cache retrieved records in PostgreSQL
-     * 5. Apply pagination and return results with summary statistics
-     *
-     * @param period Predefined period (LAST_3_MONTHS, LAST_6_MONTHS)
-     * @param fromDate Custom start date
-     * @param toDate Custom end date
-     * @param page Page number (1-indexed)
-     * @param pageSize Results per page
-     * @return PaymentBatchListResponse with batches and pagination
-     */
     @Transactional
     public PaymentBatchListResponse getHistoricalBatches(
             String period, LocalDate fromDate, LocalDate toDate,
             Integer page, Integer pageSize) {
 
-        log.debug("Retrieving historical batches. Period: {}, FromDate: {}, ToDate: {}", period, fromDate, toDate);
+        log.info("Retrieving historical batches. Period: {}, FromDate: {}, ToDate: {}", period, fromDate, toDate);
 
         // Step 1: Parse and validate filter parameters
         HistoricalDateRange dateRange = historicalDateRangeResolver.resolve(period, fromDate, toDate);
-        log.debug("Calculated date range: {} to {}", dateRange.from(), dateRange.to());
+        log.info("Calculated date range: {} to {}", dateRange.from(), dateRange.to());
 
         // Step 2: Check local database for cached batches
         List<PaymentBatchEntity> localBatches = loadLocalBatches(dateRange);
-        log.debug("Found {} batches in local database", localBatches.size());
+        log.info("Found {} batches in local database", localBatches.size());
 
         // Step 3: If insufficient data, call SOAP historical API and cache it.
         if (localBatches.isEmpty() || historicalDataStalenessCalculator.isStale(localBatches, dateRange)) {

@@ -71,10 +71,10 @@ It does not process payments directly. Instead, it orchestrates the full batch p
 
 ```json
 {
-  "batchId": "BATCH-F4A22AD8",
+  "batchId": "BATCH-20260710-001",
   "status": "PENDING",
   "createdAt": "2026-08-02T13:32:17.847006",
-  "statusUrl": "/api/v1/batch-payment/BATCH-F4A22AD8/status",
+  "statusUrl": "/api/v1/batch-payment/BATCH-20260710-001/status",
   "isDuplicate": false
 }
 ```
@@ -702,7 +702,8 @@ PARTIALLY_COMPLETED
 At that point processing stops permanently.
 
 
-### 2) Batch Status
+### 2) Batch Payment Status API Flow
+This API retrieves the current status of a payment batch and calculates real-time transaction metrics based on all transactions associated with the batch.
 
 - **Purpose:** Retrieve real-time batch status
 - **Endpoint:** `GET /api/v1/batch-payment/{batchId}/status`
@@ -711,26 +712,218 @@ At that point processing stops permanently.
 
 ```json
 {
-  "batchId": "BP-20260709-00001",
-  "status": "PROCESSING",
+  "batchId": "BATCH-20260710-001",
+  "status": "PARTIALLY_COMPLETED",
   "summary": {
-    "totalTransactions": 500,
-    "successfulTransactions": 320,
-    "failedTransactions": 12,
-    "pendingTransactions": 168
+    "totalTransactions": 4,
+    "successfulTransactions": 3,
+    "failedTransactions": 1,
+    "pendingTransactions": 0
   },
   "timing": {
-    "createdAt": "2026-07-10T09:15:34",
-    "lastUpdatedAt": "2026-07-10T09:25:00",
-    "estimatedCompletionTime": "2026-07-10T10:30:00"
+    "createdAt": "2026-08-02T15:12:59.945936",
+    "lastUpdatedAt": "2026-08-02T15:13:02.693182",
+    "estimatedCompletionTime": "2026-08-02T15:13:02.693182"
   },
   "failureInfo": {
-    "retryableFailures": 5,
-    "permanentFailures": 7,
-    "lastErrorMessage": "IBAN validation failed"
+    "retryableFailures": 1,
+    "permanentFailures": 0,
+    "lastErrorMessage": "Clearing house closed for non-urgent weekend processing"
   }
 }
 ```
+
+### Batch Status Processing Flow
+
+```text
+                    +------------------------+
+                    | Get Batch Status API   |
+                    +-----------+------------+
+                                |
+                                v
+                    +------------------------+
+                    | Fetch Payment Batch    |
+                    +-----------+------------+
+                                |
+                                v
+                    +------------------------+
+                    | Fetch Transactions     |
+                    +-----------+------------+
+                                |
+                                v
+                    +------------------------+
+                    | Calculate Metrics      |
+                    | - Total                |
+                    | - Success Count        |
+                    | - Failed Count         |
+                    | - Pending Count        |
+                    | - Processing Count     |
+                    +-----------+------------+
+                                |
+                                v
+                    +------------------------+
+                    | Derive Batch Status    |
+                    +-----------+------------+
+                                |
+      +-------------------------+--------------------------+
+      |                         |                          |
+      v                         v                          v
+ +-----------+          +---------------+        +----------------------+
+ | COMPLETED |          | PROCESSING    |        | PARTIALLY_COMPLETED  |
+ +-----------+          +---------------+        +----------------------+
+                                |
+                                |
+                                v
+                         +-------------+
+                         | FAILED?     |
+                         +------+------+ 
+                                |
+                    +-----------+-----------+
+                    |                       |
+                   Yes                      No
+                    |                       |
+                    v                       v
+          +------------------+      Return Status
+          | Retry Available? |
+          +--------+---------+
+                   |
+         +---------+---------+
+         |                   |
+        Yes                  No
+         |                   |
+         v                   v
+ +---------------+    +---------------+
+ | Back to       |    | Mark FAILED   |
+ | PENDING       |    +---------------+
+ +-------+-------+
+         |
+         v
+ +---------------+
+ | Scheduler     |
+ | Retry         |
+ +---------------+
+```
+
+### Processing Steps
+#### Step 1: Spring extracts the path variable `/batch-payment/BATCH123/status`
+
+#### Step 2: Controller delegates all processing to the service layer
+```java
+batchPaymentStatusService.getBatchStatus(batchId);
+```
+
+#### Step 3: Service Method
+```java
+@Transactional(readOnly = true)
+public PaymentBatchStatusResponse getBatchStatus(String batchId)
+```
+
+#### Why Read Only?
+```java
+@Transactional(readOnly = true)
+```
+The method only fetches data.
+Benefits:
+
+- Better database performance
+- Prevents accidental writes
+- Improves transaction optimization
+
+#### Step 4: Fetch Batch
+
+```java
+PaymentBatchEntity batch =
+        paymentBatchRepository.findAll().stream()
+        .filter(existingBatch ->
+                batchId.equals(existingBatch.getBatchId()))
+        .findFirst()
+        .orElseThrow(...);
+```
+
+#### Retrieve All Batches
+
+```java
+paymentBatchRepository.findAll();
+```
+
+Example:
+
+```text
+Batch-A
+Batch-B
+Batch-C
+```
+
+#### Filter Matching Batch
+
+```java
+.filter(existingBatch ->
+        batchId.equals(existingBatch.getBatchId()));
+```
+
+#### Step 5: Fetch Transactions
+
+```java
+List<PaymentTransactionEntity> paymentEntities =
+        paymentTransactionRepository.findAll()
+                .stream()
+                .filter(payment ->
+                        batchId.equals(payment.getBatchId()))
+                .toList();
+```
+
+#### Example
+
+Repository contains:
+
+```text
+TX1 -> BATCH123
+TX2 -> BATCH123
+TX3 -> BATCH999
+TX4 -> BATCH123
+```
+
+After filtering:
+
+```text
+TX1
+TX2
+TX4
+```
+
+#### Step 6: Calculate Metrics
+
+```java
+BatchStatusMetrics metrics =
+        batchStatusMetricsCalculator.calculate(
+            batch,
+            paymentEntities
+        );
+```
+
+#### Step 7: Metrics Calculator
+The metrics calculator performs all business calculations.
+```java
+public BatchStatusMetrics calculate(
+        PaymentBatchEntity batch,
+        List<PaymentTransactionEntity> paymentTransactions)
+```
+
+# Key Design Notes
+
+1. Controller remains thin and only handles HTTP requests/responses.
+2. Service layer orchestrates data retrieval and response creation.
+3. Metrics calculation logic is centralized inside `BatchStatusMetricsCalculator`.
+4. Batch status is derived dynamically from transaction states rather than stored directly.
+5. Retryable and permanent failures are calculated separately for operational visibility.
+6. Completion time is estimated using transaction throughput and elapsed processing time.
+7. Current implementation uses `findAll().stream().filter(...)`, which works but may become inefficient for large datasets. Direct repository methods such as:
+
+```java
+findByBatchId(String batchId)
+```
+
+would provide better database performance and scalability.
 
 ### 3) Historical Batch Retrieval
 
@@ -740,11 +933,11 @@ At that point processing stops permanently.
 **Supported Filters**
 
 - Last 3 months:
-  - `GET /api/v1/paymentEntity-batches?period=LAST_3_MONTHS`
+  - `GET /api/v1/payment-batches?period=LAST_3_MONTHS`
 - Last 6 months:
-  - `GET /api/v1/paymentEntity-batches?period=LAST_6_MONTHS`
+  - `GET /api/v1/payment-batches?period=LAST_6_MONTHS`
 - Custom range:
-  - `GET /api/v1/paymentEntity-batches?fromDate=2026-01-01&toDate=2026-06-30`
+  - `GET /api/v1/payment-batches?fromDate=2026-01-01&toDate=2026-06-30`
 
 **Sample Response**
 
@@ -762,8 +955,7 @@ At that point processing stops permanently.
       "failedPayments": 0,
       "createdAt": "2026-07-10T09:15:34",
       "completedAt": "2026-07-10T10:30:00",
-      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/status",
-      "detailsUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/paymentEntities"
+      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/status"
     },
     {
       "batchId": "BP-20260708-00002",
@@ -776,8 +968,7 @@ At that point processing stops permanently.
       "failedPayments": 0,
       "createdAt": "2026-07-08T14:20:00",
       "completedAt": "2026-07-08T15:45:00",
-      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260708-00002/status",
-      "detailsUrl": "/api/v1/paymentEntity-batches/BP-20260708-00002/paymentEntities"
+      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260708-00002/status"
     },
     {
       "batchId": "BP-20260707-00003",
@@ -790,8 +981,7 @@ At that point processing stops permanently.
       "failedPayments": 2,
       "createdAt": "2026-07-07T11:10:00",
       "completedAt": "2026-07-07T12:50:00",
-      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260707-00003/status",
-      "detailsUrl": "/api/v1/paymentEntity-batches/BP-20260707-00003/paymentEntities"
+      "statusUrl": "/api/v1/paymentEntity-batches/BP-20260707-00003/status"
     }
   ],
   "pagination": {
