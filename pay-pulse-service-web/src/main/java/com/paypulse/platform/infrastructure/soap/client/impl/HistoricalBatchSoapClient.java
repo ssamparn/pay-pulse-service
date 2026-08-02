@@ -1,5 +1,6 @@
-package com.paypulse.platform.infrastructure.soap;
+package com.paypulse.platform.infrastructure.soap.client.impl;
 
+import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;
 import com.paypulse.platform.infrastructure.soap.client.AbstractSpringWsSoapClient;
 import com.paypulse.platform.infrastructure.soap.mapper.HistoricalSoapRequestMapper;
 import com.paypulse.platform.infrastructure.soap.mapper.HistoricalSoapResponseMapper;

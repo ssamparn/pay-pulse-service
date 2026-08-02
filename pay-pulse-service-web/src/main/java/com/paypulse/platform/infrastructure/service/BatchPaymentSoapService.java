@@ -1,6 +1,6 @@
 package com.paypulse.platform.infrastructure.service;
 
-import com.paypulse.platform.infrastructure.soap.BatchPaymentSoapClient;
+import com.paypulse.platform.infrastructure.soap.client.impl.BatchPaymentSoapClient;
 import com.paypulse.platform.infrastructure.soap.SoapBatchProcessingResult;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;

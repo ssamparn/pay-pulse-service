@@ -34,13 +34,6 @@ public class PaymentBatchRestController {
 	private final BatchPaymentStatusService batchPaymentStatusService;
 	private final HistoricalBatchPaymentService historicalBatchPaymentService;
 
-	/**
-	 * Initiates a new batch payment with the provided details.
-	 * Validates the request, creates the batch, and initializes individual payments with PENDING status.
-	 *
-	 * @param request The payment batch creation request containing batch and payment details
-	 * @return 202 Accepted with batch details and status tracking URL
-	 */
 	@PostMapping("/batch-payment")
 	public ResponseEntity<PaymentBatchCreateResponse> createPaymentBatch(@Valid @RequestBody PaymentBatchCreateRequest request) {
 		log.info("POST /api/v1/batch-payment - Creating batch payment request with batchId: {}", request.batchId());

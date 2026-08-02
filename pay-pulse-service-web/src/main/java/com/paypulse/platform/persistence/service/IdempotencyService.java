@@ -23,8 +23,8 @@ public class IdempotencyService {
         return paymentBatchRepository.findByBatchId(batchId).orElse(null);
     }
 
-    public PaymentBatchEntity reserveSubmission(String batchId, LocalDateTime createdAt) {
-        PaymentBatchEntity persistedBatch = getPersistedBatch(batchId);
+    public PaymentBatchEntity reserveBatchPaymentSubmission(String batchId, LocalDateTime createdAt) {
+        PaymentBatchEntity persistedBatch = this.getPersistedBatch(batchId);
         if (persistedBatch != null) {
             return persistedBatch;
         }
@@ -56,5 +56,4 @@ public class IdempotencyService {
     private record PendingSubmission(String batchId, LocalDateTime createdAt) {
 
     }
-
 }

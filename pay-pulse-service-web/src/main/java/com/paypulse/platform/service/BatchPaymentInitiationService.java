@@ -22,24 +22,13 @@ public class BatchPaymentInitiationService {
     private final BatchPaymentProcessingWorker batchPaymentProcessingWorker;
     private final PaymentBatchCreateResponseMapper paymentBatchCreateResponseMapper;
 
-    /**
-     * Validates a new payment batch submission, performs idempotency checks based on batchId,
-     * returns an accepted response immediately, and delegates persistence to a background worker.
-     * Behavior:
-     * 1. Check for duplicate submission using batchId
-     * 2. Validate the request payload
-     * 3. Create an accepted response with status PENDING
-     * 4. Persist batch and transaction entities asynchronously
-     * @param request The payment batch creation request
-     * @return PaymentBatchCreateResponse containing batch ID, status, and tracking URL
-     */
     public PaymentBatchCreateResponse createBatch(PaymentBatchCreateRequest request) {
         log.debug("Creating payment batch with batchId: {}", request.batchId());
 
-        String generatedBatchId = generateBatchId();
+        String generatedBatchId = "BATCH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         LocalDateTime acceptedAt = LocalDateTime.now();
 
-        PaymentBatchEntity existingBatch = idempotencyService.reserveSubmission(request.batchId(), acceptedAt);
+        PaymentBatchEntity existingBatch = idempotencyService.reserveBatchPaymentSubmission(request.batchId(), acceptedAt);
         if (existingBatch != null) {
             log.warn("Duplicate batch submission detected. ExistingBatchId: {}", existingBatch.getBatchId());
             return paymentBatchCreateResponseMapper.toDuplicateResponse(existingBatch);
@@ -49,13 +38,5 @@ public class BatchPaymentInitiationService {
         batchPaymentProcessingWorker.persistBatchAsync(request, generatedBatchId, acceptedAt);
 
         return paymentBatchCreateResponseMapper.toAcceptedResponse(generatedBatchId, acceptedAt);
-    }
-
-    /**
-     * Generates a unique batch ID.
-     * Format: BATCH-YYYYMMDD-XXXXXXX (7-char UUID suffix)
-     */
-    private String generateBatchId() {
-        return "BATCH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

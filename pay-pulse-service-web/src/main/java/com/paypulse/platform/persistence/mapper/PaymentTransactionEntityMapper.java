@@ -1,4 +1,4 @@
-package com.paypulse.platform.mapper;
+package com.paypulse.platform.persistence.mapper;
 
 import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;

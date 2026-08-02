@@ -1,6 +1,6 @@
 package com.paypulse.platform.infrastructure.service;
 
-import com.paypulse.platform.infrastructure.soap.HistoricalBatchSoapClient;
+import com.paypulse.platform.infrastructure.soap.client.impl.HistoricalBatchSoapClient;
 import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
