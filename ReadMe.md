@@ -575,7 +575,7 @@ The batch aggregates are recalculated and the batch transitions to a terminal st
 Lifecycle:
 
 ```text
-    PENDING
+   PENDING
       |
       v
   PROCESSING
@@ -587,63 +587,63 @@ Lifecycle:
 ### End-to-End Processing Sequence Diagram
 
 ```text
-Client
-  |
-  | POST Batch Request
-  v
-Batch Service
-  |
-  | Reserve batchId
-  v
-Idempotency Service
-  |
-  +--> Exists In Database?
-  |         |
-  |         +--> Yes -> Return Existing Batch
-  |
-  +--> Exists In Pending Map?
-  |         |
-  |         +--> Yes -> Return Duplicate/PENDING Response
-  |
-  +--> Create Reservation
-            |
-            v
-     Return ACCEPTED
-            |
-            v
-   Async Worker Starts
-            |
-            v
-      Persist Batch
-            |
-            v
-   Persist Transactions
-            |
-            v
-   Remove Reservation
-            |
-            v
-         PENDING
-            |
-            v
-   Scheduler polls Database (Finds PENDING Batches)
-            |
-            v
-       Batch Claimed
-   (PENDING -> PROCESSING)
-            |
-            v
-     Load Transactions
-            |
-            v
- Mark Transactions PROCESSING
-            |
-            v
-   Submit To SOAP Service
-            |
-            v
-      SOAP Processing
-            |
+        Client
+          |
+          | POST Batch Request
+          v
+        Batch Service
+          |
+          | Reserve batchId
+          v
+        Idempotency Service
+          |
+          +--> Exists In Database?
+          |         |
+          |         +--> Yes -> Return Existing Batch
+          |
+          +--> Exists In Pending Map?
+          |         |
+          |         +--> Yes -> Return Duplicate/PENDING Response
+          |
+          +--> Create Reservation
+                    |
+                    v
+             Return ACCEPTED
+                    |
+                    v
+           Async Worker Starts
+                    |
+                    v
+              Persist Batch
+                    |
+                    v
+           Persist Transactions
+                    |
+                    v
+            Remove Reservation
+                    |
+                    v
+                 PENDING
+                    |
+                    v
+           Scheduler polls Database (Finds PENDING Batches)
+                    |
+                    v
+               Batch Claimed
+           (PENDING -> PROCESSING)
+                    |
+                    v
+             Load Transactions
+                    |
+                    v
+         Mark Transactions PROCESSING
+                    |
+                    v
+           Submit To SOAP Service
+                    |
+                    v
+              SOAP Processing
+                    |
             +-------------------+
             |                   |
             v                   v
