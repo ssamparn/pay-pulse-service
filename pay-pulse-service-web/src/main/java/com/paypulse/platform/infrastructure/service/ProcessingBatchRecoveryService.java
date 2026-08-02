@@ -1,4 +1,4 @@
-package com.paypulse.platform.service;
+package com.paypulse.platform.infrastructure.service;
 
 import com.paypulse.platform.config.BatchProcessingSchedulerProperties;
 import com.paypulse.platform.dto.common.BatchStatus;
@@ -6,6 +6,7 @@ import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
 import com.paypulse.platform.persistence.repository.PaymentTransactionRepository;
+import com.paypulse.platform.service.BatchStatusMetricsCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

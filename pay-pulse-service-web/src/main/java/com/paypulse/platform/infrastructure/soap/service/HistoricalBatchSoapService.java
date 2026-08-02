@@ -1,4 +1,4 @@
-package com.paypulse.platform.infrastructure.service;
+package com.paypulse.platform.infrastructure.soap.service;
 
 import com.paypulse.platform.infrastructure.soap.client.impl.HistoricalBatchSoapClient;
 import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;

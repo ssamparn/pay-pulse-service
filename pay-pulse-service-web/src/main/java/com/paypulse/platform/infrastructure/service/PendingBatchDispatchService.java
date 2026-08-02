@@ -1,4 +1,4 @@
-package com.paypulse.platform.service;
+package com.paypulse.platform.infrastructure.service;
 
 import com.paypulse.platform.config.BatchProcessingSchedulerProperties;
 import com.paypulse.platform.dto.common.BatchStatus;

@@ -1,7 +1,7 @@
 package com.paypulse.platform.infrastructure.scheduler;
 
-import com.paypulse.platform.service.ProcessingBatchRecoveryService;
-import com.paypulse.platform.service.PendingBatchDispatchService;
+import com.paypulse.platform.infrastructure.service.ProcessingBatchRecoveryService;
+import com.paypulse.platform.infrastructure.service.PendingBatchDispatchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

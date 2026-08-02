@@ -1,7 +1,7 @@
 package com.paypulse.platform.service;
 
 import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
-import com.paypulse.platform.infrastructure.service.HistoricalBatchSoapService;
+import com.paypulse.platform.infrastructure.soap.service.HistoricalBatchSoapService;
 import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;
 import com.paypulse.platform.mapper.PaymentBatchListResponseMapper;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;

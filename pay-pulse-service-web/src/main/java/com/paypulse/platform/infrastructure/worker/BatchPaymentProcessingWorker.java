@@ -2,7 +2,7 @@ package com.paypulse.platform.infrastructure.worker;
 
 import com.paypulse.platform.dto.common.BatchStatus;
 import com.paypulse.platform.config.BatchProcessingSchedulerProperties;
-import com.paypulse.platform.infrastructure.service.BatchPaymentSoapService;
+import com.paypulse.platform.infrastructure.soap.service.BatchPaymentSoapService;
 import com.paypulse.platform.infrastructure.soap.SoapBatchProcessingResult;
 import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
 import com.paypulse.platform.persistence.mapper.PaymentBatchEntityMapper;
