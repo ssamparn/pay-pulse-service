@@ -41,13 +41,13 @@ public class BatchPaymentProcessingWorker {
 
 	@Async("batchPersistenceExecutor")
 	@Transactional
-	public void persistBatchAsync(PaymentBatchCreateRequest request, String generatedBatchId, LocalDateTime acceptedAt) {
+	public void persistBatchAsync(PaymentBatchCreateRequest request, LocalDateTime acceptedAt) {
 		if (idempotencyService.getPersistedBatch(request.batchId()) != null) {
 			log.info("Skipping async persistence because batch already exists for batchId={}", request.batchId());
 			return;
 		}
 
-		PaymentBatchEntity paymentBatchEntity = paymentBatchEntityMapper.toPaymentBatchEntity(request, generatedBatchId, acceptedAt);
+		PaymentBatchEntity paymentBatchEntity = paymentBatchEntityMapper.toPaymentBatchEntity(request, acceptedAt);
 
 		try {
 			PaymentBatchEntity savedBatch = paymentBatchRepository.save(paymentBatchEntity);
@@ -61,11 +61,11 @@ public class BatchPaymentProcessingWorker {
 			log.info("Persisted batchId={} with {} pending transactions in background",
 					savedBatch.getBatchId(), paymentTransactions.size());
 		} catch (DataIntegrityViolationException exception) {
-			log.warn("Ignoring duplicate async persistence attempt for externalBatchId={}", request.batchId(), exception);
+			log.warn("Ignoring duplicate async persistence attempt for batchId={}", request.batchId(), exception);
 			idempotencyService.clearPendingSubmission(request.batchId());
 		} catch (RuntimeException exception) {
 			idempotencyService.clearPendingSubmission(request.batchId());
-			log.error("Failed to persist batchId={} asynchronously", generatedBatchId, exception);
+			log.error("Failed to persist batchId={} asynchronously", request.batchId(), exception);
 			throw exception;
 		}
 	}

@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "payment_batch",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_payment_batch_external_batch_id", columnNames = "external_batch_id")
+                @UniqueConstraint(name = "uk_payment_batch_batch_id", columnNames = "batch_id")
         },
         indexes = {
                 @Index(name = "idx_payment_batch_status_created_at", columnList = "status, created_at"),
@@ -48,9 +48,6 @@ public class PaymentBatchEntity {
 
     @Column(name = "customer_id", nullable = false, length = 64)
     private String customerId;
-
-    @Column(name = "external_batch_id", nullable = false, length = 64)
-    private String externalBatchId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)

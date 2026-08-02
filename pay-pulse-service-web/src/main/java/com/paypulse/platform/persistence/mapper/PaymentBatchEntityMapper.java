@@ -10,14 +10,13 @@ import java.time.LocalDateTime;
 @Component
 public class PaymentBatchEntityMapper {
 
-    public PaymentBatchEntity toPaymentBatchEntity(PaymentBatchCreateRequest request, String generatedBatchId, LocalDateTime acceptedAt) {
+    public PaymentBatchEntity toPaymentBatchEntity(PaymentBatchCreateRequest request, LocalDateTime acceptedAt) {
         int totalTransactions = request.payments().size();
 
         return PaymentBatchEntity.create()
-                .batchId(generatedBatchId)
+                .batchId(request.batchId())
                 .merchantId(request.merchantId())
                 .customerId(request.customerId())
-                .externalBatchId(request.batchId())
                 .status(BatchStatus.PENDING)
                 .totalAmount(request.totalAmount())
                 .currency(request.currency())

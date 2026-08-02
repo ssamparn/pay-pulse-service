@@ -28,7 +28,6 @@ public class PaymentBatchListResponseMapper {
 
         return new PaymentBatchListResponse.BatchItem(
                 batch.getBatchId(),
-                batch.getExternalBatchId(),
                 batch.getStatus(),
                 batch.getTotalAmount(),
                 batch.getCurrency(),

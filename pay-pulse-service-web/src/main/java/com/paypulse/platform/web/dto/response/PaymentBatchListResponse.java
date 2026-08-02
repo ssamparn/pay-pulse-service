@@ -15,7 +15,6 @@ public record PaymentBatchListResponse(
 ) {
     public record BatchItem(
             String batchId,
-            String externalBatchId,
             BatchStatus status,
             BigDecimal totalAmount,
             String currency,

@@ -15,9 +15,6 @@ public class HistoricalBatchRpy {
     private String batchId;
 
     @XmlElement
-    private String externalBatchId;
-
-    @XmlElement
     private String merchantId;
 
     @XmlElement
@@ -75,14 +72,6 @@ public class HistoricalBatchRpy {
 
     public void setBatchId(String batchId) {
         this.batchId = batchId;
-    }
-
-    public String getExternalBatchId() {
-        return externalBatchId;
-    }
-
-    public void setExternalBatchId(String externalBatchId) {
-        this.externalBatchId = externalBatchId;
     }
 
     public String getMerchantId() {

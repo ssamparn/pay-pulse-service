@@ -59,7 +59,6 @@ public class HistoricalSoapResponseMapper {
                 .batchId(defaultValue(soapBatch.getBatchId(), generateFallbackBatchId(createdAt)))
                 .merchantId(defaultValue(soapBatch.getMerchantId(), "MERCHANT-HIST-SOAP"))
                 .customerId(defaultValue(soapBatch.getCustomerId(), "CUSTOMER-HIST-SOAP"))
-                .externalBatchId(defaultValue(soapBatch.getExternalBatchId(), "EXT-" + defaultValue(soapBatch.getBatchId(), "UNKNOWN")))
                 .status(status)
                 .totalAmount(parseAmount(soapBatch.getTotalAmount(), BigDecimal.ZERO))
                 .currency(normalizeCurrency(soapBatch.getCurrency()))
@@ -105,7 +104,7 @@ public class HistoricalSoapResponseMapper {
                 .batchId(mappedBatch.getBatchId())
                 .beneficiaryName(defaultValue(soapTxn.getBeneficiaryName(), "Historical Beneficiary"))
                 .beneficiaryIBAN(defaultValue(soapTxn.getBeneficiaryIbanMasked(), "DE00MASKED000000000000000000000000"))
-                .externalPaymentId(defaultValue(soapTxn.getExternalPaymentId(), mappedBatch.getExternalBatchId() + "-TXN-" + position))
+                .externalPaymentId(defaultValue(soapTxn.getExternalPaymentId(), mappedBatch.getBatchId() + "-TXN-" + position))
                 .amount(parseAmount(soapTxn.getAmount(), new BigDecimal("0.01")))
                 .currency(normalizeCurrency(soapTxn.getCurrency()))
                 .paymentReference(defaultValue(soapTxn.getPaymentReference(), "HIST-REF-" + position))
@@ -204,8 +203,8 @@ public class HistoricalSoapResponseMapper {
         return "BP-HIST-" + date.toString().replace("-", "");
     }
 
-    private String generateHistoricalIdempotencyKey(String batchId, String externalBatchId) {
-        String token = defaultValue(batchId, "UNKNOWN") + "-" + defaultValue(externalBatchId, "UNKNOWN");
+    private String generateHistoricalIdempotencyKey(String batchId) {
+        String token = defaultValue(batchId, "UNKNOWN");
         String sanitized = token.replaceAll("[^A-Za-z0-9-]", "");
         if (sanitized.length() <= 56) {
             return "HIST-" + sanitized;

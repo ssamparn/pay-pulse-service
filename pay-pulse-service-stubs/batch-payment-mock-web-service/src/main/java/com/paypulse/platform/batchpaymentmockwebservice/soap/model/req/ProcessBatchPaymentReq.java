@@ -18,9 +18,6 @@ public class ProcessBatchPaymentReq {
     private String batchId;
 
     @XmlElement(required = true)
-    private String externalBatchId;
-
-    @XmlElement(required = true)
     private String merchantId;
 
     @XmlElement(required = true)
@@ -51,14 +48,6 @@ public class ProcessBatchPaymentReq {
 
     public void setBatchId(String batchId) {
         this.batchId = batchId;
-    }
-
-    public String getExternalBatchId() {
-        return externalBatchId;
-    }
-
-    public void setExternalBatchId(String externalBatchId) {
-        this.externalBatchId = externalBatchId;
     }
 
     public String getMerchantId() {

@@ -94,7 +94,6 @@ public class HistoricalBatchScenarioProcessor {
 
             HistoricalBatchRpy batch = new HistoricalBatchRpy();
             batch.setBatchId(String.format("BP-%s-%05d", createdDate.toString().replace("-", ""), i + 1));
-            batch.setExternalBatchId(String.format("EXT-HIST-%s-%04d", createdDate.toString().replace("-", ""), i + 1));
             batch.setMerchantId(defaultIfBlank(request.getMerchantId(), "MERCHANT-HIST-001"));
             batch.setCustomerId(defaultIfBlank(request.getCustomerId(), "CUSTOMER-HIST-001"));
             batch.setStatus(composition.status());

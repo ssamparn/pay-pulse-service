@@ -25,7 +25,6 @@ public class BatchPaymentInitiationService {
     public PaymentBatchCreateResponse createBatch(PaymentBatchCreateRequest request) {
         log.debug("Creating payment batch with batchId: {}", request.batchId());
 
-        String generatedBatchId = "BATCH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         LocalDateTime acceptedAt = LocalDateTime.now();
 
         PaymentBatchEntity existingBatch = idempotencyService.reserveBatchPaymentSubmission(request.batchId(), acceptedAt);
@@ -35,8 +34,8 @@ public class BatchPaymentInitiationService {
         }
 
         log.debug("Request validation passed for batch: {}", request.batchId());
-        batchPaymentProcessingWorker.persistBatchAsync(request, generatedBatchId, acceptedAt);
+        batchPaymentProcessingWorker.persistBatchAsync(request, acceptedAt);
 
-        return paymentBatchCreateResponseMapper.toAcceptedResponse(generatedBatchId, acceptedAt);
+        return paymentBatchCreateResponseMapper.toAcceptedResponse(request.batchId(), acceptedAt);
     }
 }

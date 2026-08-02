@@ -14,7 +14,6 @@ public class BatchSoapRequestMapper {
     public ProcessBatchPaymentReq toProcessBatchPaymentReq(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
         ProcessBatchPaymentReq request = new ProcessBatchPaymentReq();
         request.setBatchId(batch.getBatchId());
-        request.setExternalBatchId(batch.getExternalBatchId());
         request.setMerchantId(batch.getMerchantId());
         request.setCustomerId(batch.getCustomerId());
         request.setPaymentMethod(batch.getPaymentMethod().name());

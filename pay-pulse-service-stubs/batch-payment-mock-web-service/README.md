@@ -41,7 +41,6 @@ $ ./mvnw spring-boot:run
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-SCENARIO-001</batchId>
-      <externalBatchId>EXT-SCENARIO-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -206,7 +205,6 @@ Start with this shell and replace only marked fields for each scenario:
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-SCENARIO-001</batchId>
-      <externalBatchId>EXT-SCENARIO-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -411,7 +409,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-OUTAGE-001</batchId>
-      <externalBatchId>EXT-OUTAGE-001</externalBatchId>
       <merchantId>MERCHANT-SOAP_DOWN</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -444,7 +441,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-DUP-001</batchId>
-      <externalBatchId>EXT-DUP-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -487,7 +483,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-INVALID-AMOUNT-001</batchId>
-      <externalBatchId>EXT-INVALID-AMOUNT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -520,7 +515,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-UNSUPPORTED-CURRENCY-001</batchId>
-      <externalBatchId>EXT-UNSUPPORTED-CURRENCY-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -553,7 +547,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-METHOD-LIMIT-001</batchId>
-      <externalBatchId>EXT-METHOD-LIMIT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>CARD</paymentMethod>
@@ -586,7 +579,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-INVALID-IBAN-001</batchId>
-      <externalBatchId>EXT-INVALID-IBAN-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -619,7 +611,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-ACCOUNT-BLOCK-001</batchId>
-      <externalBatchId>EXT-ACCOUNT-BLOCK-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -652,7 +643,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-TIMEOUT-001</batchId>
-      <externalBatchId>EXT-TIMEOUT-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -685,7 +675,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-COMPLIANCE-001</batchId>
-      <externalBatchId>EXT-COMPLIANCE-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -718,7 +707,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-WEEKEND-001</batchId>
-      <externalBatchId>EXT-WEEKEND-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -751,7 +739,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-RISK-001</batchId>
-      <externalBatchId>EXT-RISK-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>
@@ -784,7 +771,6 @@ All requests below are complete SOAP envelopes and can be pasted directly in Pos
   <soapenv:Body>
     <bat:ProcessBatchPaymentReq>
       <batchId>BATCH-SUCCESS-001</batchId>
-      <externalBatchId>EXT-SUCCESS-001</externalBatchId>
       <merchantId>MERCHANT-100</merchantId>
       <customerId>CUSTOMER-200</customerId>
       <paymentMethod>SEPA</paymentMethod>

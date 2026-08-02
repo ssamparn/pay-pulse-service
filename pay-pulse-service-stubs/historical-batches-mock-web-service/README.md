@@ -83,7 +83,6 @@ cd pay-pulse-service-stubs/historical-batches-mock-web-service
       <batches>
         <batch>
           <batchId>BP-20260731-00001</batchId>
-          <externalBatchId>EXT-HIST-20260731-0001</externalBatchId>
           <merchantId>MERCHANT-12345</merchantId>
           <customerId>CUSTOMER-67890</customerId>
           <status>PARTIALLY_COMPLETED</status>
