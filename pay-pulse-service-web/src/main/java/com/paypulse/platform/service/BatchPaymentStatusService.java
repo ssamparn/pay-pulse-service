@@ -1,6 +1,6 @@
 package com.paypulse.platform.service;
 
-import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
+import com.paypulse.platform.web.dto.response.PaymentBatchStatusResponse;
 import com.paypulse.platform.mapper.PaymentBatchStatusResponseMapper;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;

@@ -1,7 +1,7 @@
 package com.paypulse.platform.persistence.entity;
 
-import com.paypulse.platform.dto.common.BatchStatus;
-import com.paypulse.platform.dto.common.PaymentMethod;
+import com.paypulse.platform.common.dto.BatchStatus;
+import com.paypulse.platform.common.dto.PaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -1,7 +1,7 @@
 package com.paypulse.platform.service;
 
-import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
-import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
+import com.paypulse.platform.web.dto.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.web.dto.response.PaymentBatchCreateResponse;
 import com.paypulse.platform.infrastructure.worker.BatchPaymentProcessingWorker;
 import com.paypulse.platform.mapper.PaymentBatchCreateResponseMapper;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;

@@ -1,8 +1,8 @@
 package com.paypulse.platform.mapper;
 
-import com.paypulse.platform.dto.common.BatchStatus;
+import com.paypulse.platform.common.dto.BatchStatus;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
-import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
+import com.paypulse.platform.web.dto.response.PaymentBatchStatusResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

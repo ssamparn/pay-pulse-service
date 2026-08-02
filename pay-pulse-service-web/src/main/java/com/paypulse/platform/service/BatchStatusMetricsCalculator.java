@@ -1,6 +1,6 @@
 package com.paypulse.platform.service;
 
-import com.paypulse.platform.dto.common.BatchStatus;
+import com.paypulse.platform.common.dto.BatchStatus;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import org.springframework.stereotype.Component;

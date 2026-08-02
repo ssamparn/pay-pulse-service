@@ -1,7 +1,7 @@
 package com.paypulse.platform.mapper;
 
-import com.paypulse.platform.dto.common.BatchStatus;
-import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
+import com.paypulse.platform.common.dto.BatchStatus;
+import com.paypulse.platform.web.dto.response.PaymentBatchListResponse;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.util.PaginationWindow;

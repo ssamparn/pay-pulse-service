@@ -1,7 +1,7 @@
 package com.paypulse.platform.infrastructure.service;
 
-import com.paypulse.platform.config.BatchProcessingSchedulerProperties;
-import com.paypulse.platform.dto.common.BatchStatus;
+import com.paypulse.platform.common.properties.BatchProcessingSchedulerProperties;
+import com.paypulse.platform.common.dto.BatchStatus;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;

@@ -1,9 +1,9 @@
-package com.paypulse.platform.api;
+package com.paypulse.platform.web.controller;
 
-import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
-import com.paypulse.platform.dto.web.response.PaymentBatchCreateResponse;
-import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
-import com.paypulse.platform.dto.web.response.PaymentBatchStatusResponse;
+import com.paypulse.platform.web.dto.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.web.dto.response.PaymentBatchCreateResponse;
+import com.paypulse.platform.web.dto.response.PaymentBatchListResponse;
+import com.paypulse.platform.web.dto.response.PaymentBatchStatusResponse;
 
 import java.net.URI;
 import java.time.LocalDate;

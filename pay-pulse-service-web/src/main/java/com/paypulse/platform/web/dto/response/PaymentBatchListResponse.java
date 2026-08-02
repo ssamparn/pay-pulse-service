@@ -1,6 +1,6 @@
-package com.paypulse.platform.dto.web.response;
+package com.paypulse.platform.web.dto.response;
 
-import com.paypulse.platform.dto.common.BatchStatus;
+import com.paypulse.platform.common.dto.BatchStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

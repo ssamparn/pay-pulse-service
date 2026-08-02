@@ -1,4 +1,4 @@
-package com.paypulse.platform.dto.web.validator;
+package com.paypulse.platform.web.dto.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

@@ -1,6 +1,6 @@
-package com.paypulse.platform.dto.web.validator;
+package com.paypulse.platform.web.dto.validator;
 
-import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.web.dto.request.PaymentBatchCreateRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.slf4j.Slf4j;

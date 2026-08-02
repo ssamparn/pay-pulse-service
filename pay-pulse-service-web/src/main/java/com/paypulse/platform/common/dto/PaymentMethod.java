@@ -1,4 +1,4 @@
-package com.paypulse.platform.dto.common;
+package com.paypulse.platform.common.dto;
 
 public enum PaymentMethod {
     CARD,

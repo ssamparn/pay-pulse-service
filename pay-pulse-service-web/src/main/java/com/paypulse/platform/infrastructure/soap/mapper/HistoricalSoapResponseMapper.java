@@ -1,7 +1,7 @@
 package com.paypulse.platform.infrastructure.soap.mapper;
 
-import com.paypulse.platform.dto.common.BatchStatus;
-import com.paypulse.platform.dto.common.PaymentMethod;
+import com.paypulse.platform.common.dto.BatchStatus;
+import com.paypulse.platform.common.dto.PaymentMethod;
 import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;
 import com.paypulse.platform.infrastructure.soap.model.rpy.HistoricalBatchRpy;
 import com.paypulse.platform.infrastructure.soap.model.rpy.HistoricalPaymentTxnRpy;

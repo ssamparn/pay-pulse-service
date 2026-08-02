@@ -1,4 +1,4 @@
-package com.paypulse.platform.config;
+package com.paypulse.platform.common.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;

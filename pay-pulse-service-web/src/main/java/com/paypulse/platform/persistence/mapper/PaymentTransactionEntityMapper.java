@@ -1,7 +1,7 @@
 package com.paypulse.platform.persistence.mapper;
 
-import com.paypulse.platform.dto.common.BatchStatus;
-import com.paypulse.platform.dto.web.request.PaymentBatchCreateRequest;
+import com.paypulse.platform.common.dto.BatchStatus;
+import com.paypulse.platform.web.dto.request.PaymentBatchCreateRequest;
 import com.paypulse.platform.persistence.entity.PaymentTransactionEntity;
 import org.springframework.stereotype.Component;
 

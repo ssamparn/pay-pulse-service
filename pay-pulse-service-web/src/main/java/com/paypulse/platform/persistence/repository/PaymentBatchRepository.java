@@ -1,6 +1,6 @@
 package com.paypulse.platform.persistence.repository;
 
-import com.paypulse.platform.dto.common.BatchStatus;
+import com.paypulse.platform.common.dto.BatchStatus;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
-package com.paypulse.platform.dto.web.request;
+package com.paypulse.platform.web.dto.request;
 
-import com.paypulse.platform.dto.common.PaymentMethod;
-import com.paypulse.platform.dto.web.validator.ValidBatchTotal;
+import com.paypulse.platform.common.dto.PaymentMethod;
+import com.paypulse.platform.web.dto.validator.ValidBatchTotal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;

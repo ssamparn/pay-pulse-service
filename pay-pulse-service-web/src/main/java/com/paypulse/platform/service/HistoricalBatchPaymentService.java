@@ -1,6 +1,7 @@
 package com.paypulse.platform.service;
 
-import com.paypulse.platform.dto.web.response.PaymentBatchListResponse;
+import com.paypulse.platform.common.dto.BatchStatus;
+import com.paypulse.platform.web.dto.response.PaymentBatchListResponse;
 import com.paypulse.platform.infrastructure.soap.service.HistoricalBatchSoapService;
 import com.paypulse.platform.infrastructure.soap.HistoricalSoapBatchSnapshot;
 import com.paypulse.platform.mapper.PaymentBatchListResponseMapper;
@@ -150,8 +151,8 @@ public class HistoricalBatchPaymentService {
         // Ensure batch transaction counters remain consistent with imported transaction payload.
         if (!transactions.isEmpty()) {
             int total = transactions.size();
-            int successful = (int) transactions.stream().filter(tx -> tx.getStatus() == com.paypulse.platform.dto.common.BatchStatus.COMPLETED).count();
-            int failed = (int) transactions.stream().filter(tx -> tx.getStatus() == com.paypulse.platform.dto.common.BatchStatus.FAILED).count();
+            int successful = (int) transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.COMPLETED).count();
+            int failed = (int) transactions.stream().filter(tx -> tx.getStatus() == BatchStatus.FAILED).count();
             int pending = Math.max(total - successful - failed, 0);
 
             batch.setPaymentsCount(total);

@@ -1,6 +1,6 @@
 package com.paypulse.platform.persistence.service;
 
-import com.paypulse.platform.dto.common.BatchStatus;
+import com.paypulse.platform.common.dto.BatchStatus;
 import com.paypulse.platform.persistence.entity.PaymentBatchEntity;
 import com.paypulse.platform.persistence.repository.PaymentBatchRepository;
 import lombok.RequiredArgsConstructor;
