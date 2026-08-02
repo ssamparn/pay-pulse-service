@@ -19,6 +19,6 @@ public class BatchPaymentSoapService {
 
 	public SoapBatchProcessingResult submitBatch(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
 		log.debug("Invoking SOAP submitBatch for batchId={} with {} transactions", batch.getBatchId(), transactions.size());
-		return batchPaymentSoapClient.submitBatch(batch, transactions);
+		return batchPaymentSoapClient.processBatch(batch, transactions);
 	}
 }

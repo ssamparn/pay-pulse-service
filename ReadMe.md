@@ -15,26 +15,6 @@ It does not process payments directly. Instead, it orchestrates the full batch p
 6. PayPulse tracks transaction outcomes and derives batch status.
 7. Batch and transaction data are persisted / updated in PostgreSQL database.
 8. Users can query live status and historical batch payment entities.
----
-
-## Core Components
-
-```text
-Frontend
-   |
-   v
-PayPulse REST API
-   |
-   +------------------------+
-   |                        |
-   v                        v
-PostgreSQL            Background Worker
-                              |
-                              v
-                    External SOAP Service
-```
-
----
 
 ## API Suite
 
@@ -42,7 +22,65 @@ PostgreSQL            Background Worker
 
 - **Purpose:** Initiate a new batch payment
 - **Endpoint:** `POST /api/v1/batch-payment`
- 
+
+**Sample Request**
+
+```json
+{
+  "merchantId": "MERCHANT-12345",
+  "customerId": "CUSTOMER-67890",
+  "batchId": "BATCH-20260710-001",
+  "totalAmount": 3500.00,
+  "currency": "EUR",
+  "paymentMethod": "SEPA",
+  "executionDate": "2026-08-15",
+  "batchDescription": "July invoices batch",
+  "requestedBy": "user@merchant.com",
+  "payments": [
+    {
+      "paymentId": "PAY-001",
+      "beneficiaryId": "BENEFICIARY-001",
+      "beneficiaryName": "Vendor A",
+      "beneficiaryIBAN": "DE89370400440532013000",
+      "amount": 1500.00,
+      "paymentReference": "Invoice INV-1001",
+      "description": "Payment for services"
+    },
+    {
+      "paymentId": "PAY-002",
+      "beneficiaryId": "BENEFICIARY-002",
+      "beneficiaryName": "Vendor B",
+      "beneficiaryIBAN": "DE89370400440532013000",
+      "amount": 1000.00,
+      "paymentReference": "Invoice INV-1002",
+      "description": "Payment for services"
+    },
+    {
+      "paymentId": "PAY-003",
+      "beneficiaryId": "BENEFICIARY-003",
+      "beneficiaryName": "Vendor C",
+      "beneficiaryIBAN": "DE89370400440532013000",
+      "amount": 1000.00,
+      "paymentReference": "Invoice INV-1003",
+      "description": "Payment for services"
+    }
+  ]
+}
+```
+**Sample Response**
+
+```json
+{
+  "batchId": "BP-20260709-00001",
+  "status": "PENDING",
+  "createdAt": "2026-07-10T09:15:34",
+  "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/status",
+  "isDuplicate": false
+}
+```
+
+> Possible values of `status`: `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `PARTIALLY_COMPLETED`
+
 ### Behavior:
 
 #### 1. Request Reaches the API
@@ -196,7 +234,357 @@ Request B -> batchId = PAYROLL-2026-07
 
 This prevents duplicate creation during the gap between request acceptance and database commit.
 
-# Sequence Diagram
+## Result
+The same `batchId` can be safely retried multiple times without creating duplicate batches. 
+Concurrent requests are protected by the in-memory reservation mechanism, while persisted requests are protected by database lookups and uniqueness constraints.
+
+#### 14. Scheduler Execution
+
+A Spring scheduler runs periodically.
+
+```java
+@Scheduled(
+    fixedDelayString = "...",
+    initialDelayString = "..."
+)
+```
+
+Its responsibility is to search for batches that are waiting to be processed.
+
+#### Scheduler Flow
+- Scheduler calls
+```java
+pendingBatchDispatchService.dispatchPendingBatches();
+```
+- Any processing error is caught and logged. 
+- Scheduler continues running in future cycles.
+
+#### 14. Finding Pending Batches
+
+The dispatcher queries for batches with status `PENDING` ordered by creation time.
+
+```java
+findBatchIdsByStatusOrderByCreatedAtAsc(...)
+```
+The oldest batches are processed first.
+The number of batches selected is limited by
+
+```java
+schedulerProperties.getBatchSize()
+```
+This prevents overwhelming the system.
+
+#### 15. Claiming a Batch
+For each candidate batch, an atomic status transition is attempted.
+
+```java
+updateBatchStatusIfCurrentStatusMatches(
+    batchId,
+    PENDING,
+    PROCESSING,
+    claimedAt
+);
+```
+#### Why This Matters
+
+The batch is only claimed if it is still `PENDING` at the time of the update. 
+This prevents multiple workers from processing the same batch simultaneously.
+
+#### Successful Claim
+If `updatedRows == 1` the batch was successfully claimed.
+
+#### Status transition:
+```text
+ PENDING
+    |
+    v
+PROCESSING
+```
+
+Processing immediately begins:
+```java
+processClaimedBatchAsync(batchId);
+```
+
+#### Failed Claim
+
+If `updatedRows == 0` another worker has already claimed the batch. The current scheduler skips it.
+
+#### 15. Asynchronous Batch Processing
+
+The claimed batch is processed asynchronously using:
+```java
+@Async("batchProcessingExecutor")
+```
+
+The worker performs the following steps.
+
+#### 16. Load Batch
+
+The worker loads the claimed batch.
+```java
+paymentBatchRepository.findById(batchId)
+```
+
+If the batch cannot be found then `IllegalStateException` is thrown.
+> This should never happen under normal conditions.
+
+#### 17. Load Transactions
+
+All transactions belonging to the batch are loaded.
+```java
+paymentTransactionRepository.findByBatchId(batchId)
+```
+
+#### No Transactions Found
+If no transactions exist for the batch, the batch is marked as failed.
+```text
+  PROCESSING
+      |
+      v
+    FAILED
+```
+
+The batch is marked as failed.
+
+Fields are updated:
+- Status = FAILED
+- Completed timestamp populated
+- Progress = 100%
+
+Processing ends.
+
+#### 18. Mark Transactions as Processing
+Before calling the SOAP service every transaction is marked:
+
+```text
+  PENDING
+     |
+     v
+ PROCESSING
+```
+
+Updates include:
+- Status = PROCESSING
+- Failure reason cleared
+- Retryable = false
+- Updated timestamp refreshed
+- Changes are persisted immediately.
+
+#### 19. Submit Batch to SOAP Service
+
+The batch and transactions are submitted to the external integration layer.
+
+```java
+batchPaymentSoapService.submitBatch(...)
+```
+
+The SOAP service returns a processing result containing:
+
+- Transaction outcomes
+- Failure reasons
+- Retry eligibility
+- Processing timestamps
+
+#### 20. Apply SOAP Results
+Results are mapped back to each transaction.
+
+#### Successful Transaction
+For every successful SOAP outcome:
+
+```text
+  PROCESSING
+      |
+      v
+  COMPLETED
+```
+Updates:
+- Status = COMPLETED
+- Failure reason cleared
+- Retryable = false
+
+#### Failed Transaction
+
+For failed SOAP outcomes:
+
+```text
+  PROCESSING
+      |
+      v
+   FAILED
+```
+
+Updates:
+
+- Status = FAILED
+- Failure reason populated
+- Retryable flag populated
+
+#### Missing SOAP Result
+
+If a transaction receives no SOAP response:
+
+```text
+  PROCESSING
+      |
+      v
+   FAILED
+```
+
+Updates:
+- Status = FAILED
+- Failure reason = Missing SOAP outcome
+- Retryable = true
+
+#### 21. Update Batch Aggregates
+After all transactions have been updated, batch metrics are recalculated.
+
+The calculator derives:
+
+- Total transactions
+- Successful transactions
+- Failed transactions
+- Pending transactions
+- Final batch status
+
+#### Progress Calculation
+`progressPercentage = (completedTransactions * 100) / totalTransactions`
+Where:
+`completedTransactions = successful + failed`
+
+Example:
+```text
+Total Transactions = 100
+Successful = 70
+Failed = 20
+Pending = 10
+
+Progress = 90%
+```
+
+#### 22. Derive Final Batch Status
+
+The aggregate calculator determines the batch status.
+
+Possible outcomes:
+
+#### Completed
+```text
+All transactions succeeded
+```
+Status:`COMPLETED`
+
+#### Failed
+```text
+All transactions failed
+```
+Status: `FAILED`
+
+#### Partially Completed
+```text
+Some succeeded
+Some failed
+```
+Status: `PARTIALLY_COMPLETED`
+
+#### Pending
+```text
+Transactions still waiting
+```
+Status remains: `PENDING`
+
+
+#### 23. Terminal Status Handling
+
+The following statuses are considered terminal:
+
+```text
+COMPLETED
+FAILED
+PARTIALLY_COMPLETED
+```
+
+When a batch reaches a terminal state:
+
+```java
+completedAt = updatedAt
+```
+is populated.
+
+No further processing is required.
+
+#### 24. SOAP Failure Handling
+A SOAP invocation may fail entirely.
+
+Examples:
+
+- Timeout
+- Network failure
+- Service unavailable
+- Unexpected exception
+
+In this case `handleSoapProcessingFailure(...)` is executed.
+
+#### 23. Recovery Attempt Tracking
+Each failure increments:
+```java
+recoveryAttemptCount
+```
+
+Example:
+
+```text
+Attempt 1
+Attempt 2
+Attempt 3
+```
+
+#### 24. Retry Limit Check
+The system compares `recoveryAttemptCount` against `maxRecoveryAttempts`
+
+#### Retry Limit Not Reached
+
+The batch is returned to `PENDING`
+using `revertBatchToPending(...)`
+
+### Transaction Updates
+
+All transactions still marked `PROCESSING` are changed back to `PENDING`.
+
+The scheduler can pick up the batch again on a later cycle.
+
+Lifecycle:
+
+```text
+    PROCESSING
+        |
+        v
+     PENDING
+        |
+        v
+  Scheduler Retry
+```
+
+#### Retry Limit Reached
+
+When `recoveryAttemptCount >= maxRecoveryAttempts` the batch is permanently failed.
+Remaining transactions are marked `FAILED` with failure reason `Max retry attempts reached`
+
+The batch aggregates are recalculated and the batch transitions to a terminal state.
+
+Lifecycle:
+
+```text
+    PENDING
+      |
+      v
+  PROCESSING
+      |
+      v
+    FAILED
+```
+
+### End-to-End Processing Sequence Diagram
 
 ```text
 Client
@@ -235,75 +623,88 @@ Idempotency Service
    Remove Reservation
             |
             v
-        Completed
+         PENDING
+            |
+            v
+   Scheduler polls Database (Finds PENDING Batches)
+            |
+            v
+       Batch Claimed
+   (PENDING -> PROCESSING)
+            |
+            v
+     Load Transactions
+            |
+            v
+ Mark Transactions PROCESSING
+            |
+            v
+   Submit To SOAP Service
+            |
+            v
+      SOAP Processing
+            |
+            +-------------------+
+            |                   |
+            v                   v
+       SOAP Success         SOAP Failure
+           |                    |
+           v                    v
+      Update Status         Retry Logic
+           |                    |
+           v                    v
+    Update Transactions    Increment Retry Count
+           |                    |
+           v                    v
+    Update Batch Metrics        +----------------+
+           |                                     |
+           v                                     v
+       COMPLETED                                 +--> Retry Available?
+       FAILED                                    |       
+       PARTIALLY_COMPLETED         +-------------+-------------+
+                                   |                           |
+                                  Yes                          No
+                                   |                           |
+                                   v                           v
+                             Back to PENDING              Mark FAILED
+                                   |
+                                   v
+                             Scheduler Retry
 ```
-  - In the background, the following steps are performed:
-    - Create batch
-    - Create transactions
-    - Assign status `PENDING`
-    - Persist in PostgreSQL database
-    - Database scheduler will query for all the `PENDING` batches.
-    - An Async worker triggers the SOAP service for processing payments within the batch.
-    - The SOAP service processes the transactions and returns the outcome.
-    - PayPulse updates the transaction statuses and derives the overall batch status.
+## Key Design Principles
 
-**Request**
+### Scheduler-Based Processing
 
-```json
-{
-  "merchantId": "MERCHANT-12345",
-  "customerId": "CUSTOMER-67890",
-  "batchId": "BATCH-20260710-001",
-  "totalAmount": 3500.00,
-  "currency": "EUR",
-  "paymentMethod": "SEPA",
-  "executionDate": "2026-08-15",
-  "batchDescription": "July invoices batch",
-  "requestedBy": "user@merchant.com",
-  "payments": [
-    {
-      "paymentId": "PAY-001",
-      "beneficiaryId": "BENEFICIARY-001",
-      "beneficiaryName": "Vendor A",
-      "beneficiaryIBAN": "DE89370400440532013000",
-      "amount": 1500.00,
-      "paymentReference": "Invoice INV-1001",
-      "description": "Payment for services"
-    },
-    {
-      "paymentId": "PAY-002",
-      "beneficiaryId": "BENEFICIARY-002",
-      "beneficiaryName": "Vendor B",
-      "beneficiaryIBAN": "DE89370400440532013000",
-      "amount": 1000.00,
-      "paymentReference": "Invoice INV-1002",
-      "description": "Payment for services"
-    },
-    {
-      "paymentId": "PAY-003",
-      "beneficiaryId": "BENEFICIARY-003",
-      "beneficiaryName": "Vendor C",
-      "beneficiaryIBAN": "DE89370400440532013000",
-      "amount": 1000.00,
-      "paymentReference": "Invoice INV-1003",
-      "description": "Payment for services"
-    }
-  ]
-}
-```
-**Sample Response**
+Batches are not processed immediately after creation. They are queued in a `PENDING` state and picked up by a scheduler.
 
-```json
-{
-  "batchId": "BP-20260709-00001",
-  "status": "PENDING",
-  "createdAt": "2026-07-10T09:15:34",
-  "statusUrl": "/api/v1/paymentEntity-batches/BP-20260709-00001/status",
-  "isDuplicate": false
-}
+### Atomic Claiming
+
+A batch can only transition from `PENDING` to `PROCESSING` once, preventing concurrent execution.
+
+### Asynchronous Processing
+
+Scheduler dispatch and SOAP processing run in background executors to keep request handling responsive.
+
+### Automatic Retry
+
+Transient failures cause the batch to return to `PENDING` until the configured retry limit is reached.
+
+### Aggregate Status Tracking
+
+Batch status is derived from transaction status and automatically updated after every processing cycle.
+
+### Terminal States
+
+A batch is considered finished when its status becomes:
+
+```text
+COMPLETED
+FAILED
+PARTIALLY_COMPLETED
 ```
 
-> Possible values of `status`: `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `PARTIALLY_COMPLETED`
+At that point processing stops permanently.
+
 
 ### 2) Batch Status
 
@@ -331,10 +732,6 @@ Idempotency Service
     "retryableFailures": 5,
     "permanentFailures": 7,
     "lastErrorMessage": "IBAN validation failed"
-  },
-  "links": {
-    "paymentDetails": "/api/v1/batch-payment/BP-20260709-00001/payments",
-    "failedPayments": "/api/v1/batch-payment/BP-20260709-00001/payments?status=FAILED"
   }
 }
 ```

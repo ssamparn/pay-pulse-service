@@ -41,7 +41,7 @@ public class BatchPaymentSoapClient extends AbstractSpringWsSoapClient<ProcessBa
 		setDefaultUri(batchPaymentSoapEndpoint);
 	}
 
-	public SoapBatchProcessingResult submitBatch(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
+	public SoapBatchProcessingResult processBatch(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions) {
 		ProcessBatchPaymentReq request = batchSoapRequestMapper.toProcessBatchPaymentReq(batch, transactions);
 		ProcessBatchPaymentRpy response = send(request);
 		log.info("SOAP gateway processed batchId={} with {} transactions", batch.getBatchId(), transactions.size());

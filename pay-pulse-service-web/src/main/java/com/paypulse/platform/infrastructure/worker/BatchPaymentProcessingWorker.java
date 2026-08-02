@@ -88,13 +88,55 @@ public class BatchPaymentProcessingWorker {
 
 		try {
 			SoapBatchProcessingResult soapResult = batchPaymentSoapService.submitBatch(batch, transactions);
-			applySoapOutcome(batch, transactions, soapResult, LocalDateTime.now());
+			this.applySuccessfulSoapProcessing(batch, transactions, soapResult, LocalDateTime.now());
 		} catch (RuntimeException exception) {
-			handleSoapProcessingFailure(batch, transactions, processingStartedAt, exception);
+			this.applyFailureInSoapProcessing(batch, transactions, processingStartedAt, exception);
 		}
 	}
 
-	private void handleSoapProcessingFailure(
+	private void applySuccessfulSoapProcessing(
+			PaymentBatchEntity batch,
+			List<PaymentTransactionEntity> transactions,
+			SoapBatchProcessingResult soapResult,
+			LocalDateTime processedAt
+	) {
+		Map<String, SoapBatchProcessingResult.SoapTransactionResult> resultByExternalPaymentId = new HashMap<>();
+		for (SoapBatchProcessingResult.SoapTransactionResult result : soapResult.transactions()) {
+			resultByExternalPaymentId.put(result.externalPaymentId(), result);
+		}
+
+		for (PaymentTransactionEntity transaction : transactions) {
+			SoapBatchProcessingResult.SoapTransactionResult result = resultByExternalPaymentId.get(transaction.getExternalPaymentId());
+			if (result == null) {
+				transaction.setStatus(BatchStatus.FAILED);
+				transaction.setFailureReason("Missing SOAP outcome for transaction");
+				transaction.setRetryable(true);
+				transaction.setProcessedAt(processedAt);
+				transaction.setUpdatedAt(processedAt);
+				continue;
+			}
+
+			if (result.outcome() == SoapBatchProcessingResult.TransactionOutcome.SUCCESS) {
+				transaction.setStatus(BatchStatus.COMPLETED);
+				transaction.setFailureReason(null);
+				transaction.setRetryable(false);
+			} else {
+				transaction.setStatus(BatchStatus.FAILED);
+				transaction.setFailureReason(result.failureReason());
+				transaction.setRetryable(result.retryable());
+			}
+
+			LocalDateTime transactionProcessedAt = result.processedAt() == null ? processedAt : result.processedAt();
+			transaction.setProcessedAt(transactionProcessedAt);
+			transaction.setUpdatedAt(processedAt);
+		}
+
+		paymentTransactionRepository.saveAll(transactions);
+		updateBatchAggregates(batch, transactions, processedAt);
+		log.info("Completed SOAP processing for batchId={} with final status={}", batch.getBatchId(), batch.getStatus());
+	}
+
+	private void applyFailureInSoapProcessing(
 			PaymentBatchEntity batch,
 			List<PaymentTransactionEntity> transactions,
 			LocalDateTime failedAt,
@@ -153,48 +195,6 @@ public class BatchPaymentProcessingWorker {
 			transaction.setRetryable(false);
 		}
 		paymentTransactionRepository.saveAll(transactions);
-	}
-
-	private void applySoapOutcome(
-			PaymentBatchEntity batch,
-			List<PaymentTransactionEntity> transactions,
-			SoapBatchProcessingResult soapResult,
-			LocalDateTime processedAt
-	) {
-		Map<String, SoapBatchProcessingResult.SoapTransactionResult> resultByExternalPaymentId = new HashMap<>();
-		for (SoapBatchProcessingResult.SoapTransactionResult result : soapResult.transactions()) {
-			resultByExternalPaymentId.put(result.externalPaymentId(), result);
-		}
-
-		for (PaymentTransactionEntity transaction : transactions) {
-			SoapBatchProcessingResult.SoapTransactionResult result = resultByExternalPaymentId.get(transaction.getExternalPaymentId());
-			if (result == null) {
-				transaction.setStatus(BatchStatus.FAILED);
-				transaction.setFailureReason("Missing SOAP outcome for transaction");
-				transaction.setRetryable(true);
-				transaction.setProcessedAt(processedAt);
-				transaction.setUpdatedAt(processedAt);
-				continue;
-			}
-
-			if (result.outcome() == SoapBatchProcessingResult.TransactionOutcome.SUCCESS) {
-				transaction.setStatus(BatchStatus.COMPLETED);
-				transaction.setFailureReason(null);
-				transaction.setRetryable(false);
-			} else {
-				transaction.setStatus(BatchStatus.FAILED);
-				transaction.setFailureReason(result.failureReason());
-				transaction.setRetryable(result.retryable());
-			}
-
-			LocalDateTime transactionProcessedAt = result.processedAt() == null ? processedAt : result.processedAt();
-			transaction.setProcessedAt(transactionProcessedAt);
-			transaction.setUpdatedAt(processedAt);
-		}
-
-		paymentTransactionRepository.saveAll(transactions);
-		updateBatchAggregates(batch, transactions, processedAt);
-		log.info("Completed SOAP processing for batchId={} with final status={}", batch.getBatchId(), batch.getStatus());
 	}
 
 	private void updateBatchAggregates(PaymentBatchEntity batch, List<PaymentTransactionEntity> transactions, LocalDateTime updatedAt) {
